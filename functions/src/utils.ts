@@ -1,5 +1,3 @@
-import { Timestamp } from "firebase-admin/firestore";
-
 // Interface definitions
 export interface PetProfile {
   email: string;
@@ -65,4 +63,3 @@ export async function sendEmail(to: string, subject: string, body: string) {
 // `ai` instance in particular might have different configurations for different flows in complex scenarios.
 // `Timestamp` is re-exported here for convenience if needed by other files,
 // or they can import it directly from "firebase-admin/firestore".
-export { Timestamp };

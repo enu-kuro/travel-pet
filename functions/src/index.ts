@@ -1,32 +1,13 @@
 import { initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-// import { onMessagePublished } from "firebase-functions/v2/pubsub";
-// import { onSchedule } from "firebase-functions/v2/scheduler";
-// import { defineSecret } from "firebase-functions/params";
-// import { google } from "googleapis";
-import { genkit } from "genkit";
-import { vertexAI } from "@genkit-ai/vertexai";
 import { onCallGenkit } from "firebase-functions/https";
 
 import { createPetFlow } from "./createPetFlow";
 import { dailyDiaryFlow } from "./dailyDiaryFlow";
-// import { PetProfile, DiaryEntry, sendEmail } from "./utils"; // Common utilities - Not directly used in index.ts anymore
 
-// Initialize Firebase Admin
 initializeApp();
-export const db = getFirestore(); // db can be exported from utils if needed by flows directly
+export const db = getFirestore();
 
-// Initialize Genkit with Vertex AI
-// This AI instance should be configured and potentially exported from a central config file (e.g., utils.ts or a dedicated ai.ts)
-// For now, we assume flows will use a locally initialized or imported 'ai' instance.
-// If 'ai' instance is needed by flows, it should be initialized in utils.ts or passed to flows.
-export const ai = genkit({
-  plugins: [
-    vertexAI({ location: "us-central1", projectId: "travel-pet-b6edb" }),
-  ],
-});
-
-// Export Genkit Flows as Firebase Functions using onCallGenkit
 export const createPet = onCallGenkit(createPetFlow);
 
 export const generateDiary = onCallGenkit(dailyDiaryFlow);

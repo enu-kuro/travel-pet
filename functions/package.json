@@ -1,7 +1,7 @@
 {
   "main": "lib/index.js",
   "scripts": {
-    "genkit:start": "genkit start -- tsx --watch src/index.ts",
+    "genkit:start": "genkit start -- tsx --watch src src/index.ts",
     "lint": "eslint --ext .js,.ts .",
     "build": "tsc",
     "build:watch": "tsc --watch",
