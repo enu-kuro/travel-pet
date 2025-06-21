@@ -117,29 +117,8 @@ const createPetFlow = ai.defineFlow(
     // TODO: Validate email format
     console.log(`Creating pet for email: ${input.email}`);
 
-    // Step A: Generate random pet profile using Gemini
-    //     const profilePrompt = `
-    // あなたは旅行好きのデジタルペットのプロフィールを作成するアシスタントです。
-    // 以下の条件でペットのプロフィールを日本語で生成してください：
-    // - 名前（可愛らしい動物の名前）
-    // - 性格（明るい、好奇心旺盛など）
-    // - 旅行の好み（海、山、都市部など）
-    // - 100文字以内で簡潔に
-
-    // 返信にはプロフィールの内容のみを含めてください。
-    // 例：「私はちび太郎です！好奇心旺盛で冒険好きな子猫です。海辺の町や温泉地が大好きで、美味しい食べ物を探すのが趣味です。毎日新しい発見をするのがワクワクします！」
-    // `;
-
-    // const profileResponse = await ai.generate({
-    //   model: gemini20FlashLite,
-    //   prompt: profilePrompt,
-    //   config: {
-    //     temperature: 2.0,
-    //   },
-    // });
-
-    const inputSchema = z.object({}); // input.schema: {}
-    const outputSchema = z.object({ profile: z.string() }); // output.schema: { profile: string }
+    const inputSchema = z.object({});
+    const outputSchema = z.object({ profile: z.string() });
 
     const petProfilePrompt = ai.prompt<typeof inputSchema, typeof outputSchema>(
       "create-pet-profile"
@@ -188,6 +167,16 @@ ${profile}
   }
 );
 
+const generateDestinationPrompt = ai.prompt<
+  z.ZodObject<{ profile: z.ZodString }>,
+  z.ZodObject<{ destination: z.ZodString }>
+>("generate-destination");
+
+const generateDiaryPrompt = ai.prompt<
+  z.ZodObject<{ profile: z.ZodString; destination: z.ZodString }>,
+  z.ZodObject<{ diary: z.ZodString }>
+>("generate-diary");
+
 // Flow #2: Daily Diary Generation Flow
 const dailyDiaryFlow = ai.defineFlow(
   {
@@ -198,7 +187,7 @@ const dailyDiaryFlow = ai.defineFlow(
   async (input) => {
     console.log(`Generating diary for pet: ${input.petId}`);
 
-    // Step A: Read profile from Firestore
+    // Read profile from Firestore
     const petDoc = await db.collection("pets").doc(input.petId).get();
 
     if (!petDoc.exists) {
@@ -208,50 +197,28 @@ const dailyDiaryFlow = ai.defineFlow(
 
     const petData = petDoc.data() as PetProfile;
 
-    // Step B: Generate next travel destination
-    const destinationPrompt = `
-以下のペットプロフィールに基づいて、次の旅行先を1文で提案してください：
-
-ペットプロフィール: ${petData.profile}
-
-条件：
-- 日本国内の具体的な場所
-- ペットの性格や好みに合った場所
-- 1文で簡潔に（例：「北海道の美瑛町」「沖縄の石垣島」「京都の嵐山」）
-`;
-
-    const destinationResponse = await ai.generate({
-      model: "gemini-1.5-flash",
-      prompt: destinationPrompt,
+    // 旅行先生成
+    const { output: destOutput } = await generateDestinationPrompt({
+      profile: petData.profile,
     });
+    if (!destOutput || !destOutput.destination) {
+      console.error("Failed to generate destination");
+      return { success: false };
+    }
+    const itinerary = destOutput.destination;
 
-    const itinerary = destinationResponse.text;
-
-    // Step C: Generate diary text
-    const diaryPrompt = `
-あなたは旅行中のデジタルペットです。以下の設定で今日の旅日記を書いてください：
-
-ペットプロフィール: ${petData.profile}
-今日の旅行先: ${itinerary}
-
-条件：
-- 100-150文字の日本語
-- ペットの視点から書く
-- 今日体験したことや感じたこと
-- 明るく楽しい内容
-- 次の場所への期待も含める
-
-例：「今日は${itinerary}に来ました！美しい景色に感動して、地元の美味しい料理も堪能しました。現地の人たちもとても親切で、心が温まりました。明日はどんな冒険が待っているのかな？」
-`;
-
-    const diaryResponse = await ai.generate({
-      model: "gemini-1.5-flash",
-      prompt: diaryPrompt,
+    // 日記生成
+    const { output: diaryOutput } = await generateDiaryPrompt({
+      profile: petData.profile,
+      destination: itinerary,
     });
+    if (!diaryOutput || !diaryOutput.diary) {
+      console.error("Failed to generate diary");
+      return { success: false };
+    }
+    const diary = diaryOutput.diary;
 
-    const diary = diaryResponse.text;
-
-    // Step D: Save diary to Firestore
+    // Persist diary entry to Firestore
     const today = new Date().toISOString().split("T")[0];
     const diaryEntry: DiaryEntry = {
       itinerary: itinerary,

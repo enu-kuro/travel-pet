@@ -1,0 +1,19 @@
+---
+model: vertexai/gemini-2.0-flash-lite
+config:
+  temperature: 2.0
+input:
+  schema:
+    profile: string
+output:
+  schema:
+    destination: string
+---
+以下のペットプロフィールに基づいて、次の旅行先を1文で提案してください：
+
+ペットプロフィール: {{profile}}
+
+条件：
+- 日本国内の具体的な場所
+- ペットの性格や好みに合った場所
+- 1文で簡潔に（例：「北海道の美瑛町」「沖縄の石垣島」「京都の嵐山」）
