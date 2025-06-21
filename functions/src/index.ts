@@ -20,7 +20,7 @@ const db = getFirestore(); // db can be exported from utils if needed by flows d
 // This AI instance should be configured and potentially exported from a central config file (e.g., utils.ts or a dedicated ai.ts)
 // For now, we assume flows will use a locally initialized or imported 'ai' instance.
 // If 'ai' instance is needed by flows, it should be initialized in utils.ts or passed to flows.
-genkit({
+export const ai = genkit({
   plugins: [
     vertexAI({ location: "us-central1", projectId: "travel-pet-b6edb" }),
   ],

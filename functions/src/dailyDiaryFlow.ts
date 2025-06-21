@@ -1,10 +1,10 @@
 import { getFirestore } from "firebase-admin/firestore";
-import { genkit } from "genkit"; // Removed Ai as it's not directly used as a type here for flow definition
+// import { genkit } from "genkit"; // genkit is imported via ai instance from index
 import { z } from "zod";
 import { PetProfile, DiaryEntry, sendEmail } from "./utils";
+import { ai } from "./index"; // Import the ai instance
 
 const db = getFirestore();
-// const ai = genkit(); // Removed: Flows will use the globally configured Genkit instance from index.ts
 
 // Zod schemas for input/output validation
 const DailyDiaryInputSchema = z.object({
