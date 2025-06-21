@@ -14,7 +14,7 @@ import { dailyDiaryFlow } from "./dailyDiaryFlow";
 
 // Initialize Firebase Admin
 initializeApp();
-const db = getFirestore(); // db can be exported from utils if needed by flows directly
+export const db = getFirestore(); // db can be exported from utils if needed by flows directly
 
 // Initialize Genkit with Vertex AI
 // This AI instance should be configured and potentially exported from a central config file (e.g., utils.ts or a dedicated ai.ts)
@@ -25,7 +25,6 @@ export const ai = genkit({
     vertexAI({ location: "us-central1", projectId: "travel-pet-b6edb" }),
   ],
 });
-
 
 // Export Genkit Flows as Firebase Functions using onCallGenkit
 export const createPet = onCallGenkit(createPetFlow);

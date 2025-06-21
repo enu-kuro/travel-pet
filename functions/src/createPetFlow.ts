@@ -1,10 +1,7 @@
-import { getFirestore, Timestamp } from "firebase-admin/firestore";
-// import { genkit } from "genkit"; // genkit is imported via ai instance from index
+import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 import { PetProfile, sendEmail } from "./utils";
-import { ai } from "./index"; // Import the ai instance
-
-const db = getFirestore();
+import { ai, db } from "./index"; // Import the ai instance
 
 // Zod schemas for input/output validation
 const CreatePetInputSchema = z.object({
@@ -37,7 +34,7 @@ export const createPetFlow = ai.defineFlow(
     if (!output || !output.profile) {
       throw new Error("Failed to generate pet profile");
     }
-    const profile = output?.profile;
+    const profile = output.profile;
 
     // Step B: Persist to Firestore
     const petRef = db.collection("pets").doc();
