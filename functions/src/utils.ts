@@ -21,7 +21,7 @@ async function getEmailTransporter() {
   const pass = EMAIL_APP_PASSWORD.value(); // Access secret value
 
   return nodemailer.createTransport({
-    service: 'gmail',
+    service: "gmail",
     auth: {
       user,
       pass,
@@ -55,7 +55,7 @@ export async function getImapClient() {
   return new Imap({
     user,
     password,
-    host: 'imap.gmail.com',
+    host: "imap.gmail.com",
     port: 993,
     tls: true,
     tlsOptions: {
