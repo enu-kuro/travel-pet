@@ -11,55 +11,58 @@ export interface DiaryEntry {
   date: string;
 }
 
-// Mock email function
-export async function sendEmail(to: string, subject: string, body: string) {
-  console.log("=== MOCK EMAIL ===");
-  console.log(`To: ${to}`);
-  console.log(`Subject: ${subject}`);
-  console.log(`Body: ${body}`);
-  console.log("=== END MOCK EMAIL ===");
+import nodemailer from "nodemailer";
+import Imap from "imap"; // Add Imap import
+import { EMAIL_ADDRESS, EMAIL_APP_PASSWORD } from "./index"; // Import secrets
 
-  // TODO: Replace with actual Gmail API implementation
-  /*
-  const gmail = getGmailClient(); // This would need GMAIL_CLIENT_ID etc.
-  const emailMessage = [
-    `To: ${to}`,
-    `Subject: ${subject}`,
-    "Content-Type: text/plain; charset=UTF-8",
-    "",
-    body,
-  ].join("\r\n");
+// Email client setup using nodemailer with App Password
+async function getEmailTransporter() {
+  const user = EMAIL_ADDRESS.value(); // Access secret value
+  const pass = EMAIL_APP_PASSWORD.value(); // Access secret value
 
-  const encodedMessage = Buffer.from(emailMessage).toString("base64");
-
-  await gmail.users.messages.send({
-    userId: "me",
-    requestBody: {
-      raw: encodedMessage,
+  return nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user,
+      pass,
     },
   });
-  */
 }
 
-// It might also be beneficial to move Firestore instance `db`
-// and Genkit `ai` instance initialization here if they are broadly used
-// and don't have specific configurations per file.
-// For example:
-// import { initializeApp } from "firebase-admin/app";
-// import { getFirestore } from "firebase-admin/firestore";
-// import { genkit } from "genkit";
-// import { vertexAI } from "@genkit-ai/vertexai";
+export async function sendEmail(to: string, subject: string, body: string) {
+  const transporter = await getEmailTransporter();
+  const mailOptions = {
+    from: EMAIL_ADDRESS.value(), // Access secret value
+    to: to,
+    subject: subject,
+    text: body,
+  };
 
-// initializeApp(); // Ensure this is called only once
-// export const db = getFirestore();
-// export const ai = genkit({
-//   plugins: [
-//     vertexAI({ location: "us-central1", projectId: "travel-pet-b6edb" }),
-//   ],
-// });
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Email sent to: ${to}, Subject: ${subject}`);
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw error; // Re-throw the error to be handled by the caller
+  }
+}
 
-// However, to keep changes minimal and focused on the request,
-// `db` and `ai` initializations are kept in their respective files or index.ts for now.
-// `ai` instance in particular might have different configurations for different flows in complex scenarios.
-// `Timestamp` is re-exported here for convenience if needed by other files,
-// or they can import it directly from "firebase-admin/firestore".
+// IMAP client setup for reading emails
+export async function getImapClient() {
+  const user = EMAIL_ADDRESS.value(); // Access secret value
+  const password = EMAIL_APP_PASSWORD.value(); // Access secret value
+
+  return new Imap({
+    user,
+    password,
+    host: "imap.gmail.com",
+    port: 993,
+    tls: true,
+    tlsOptions: {
+      rejectUnauthorized: false, // Note: For production, consider certificate validation carefully
+    },
+  });
+}
+
+// Note: Firestore 'db' and Genkit 'ai' instances are initialized elsewhere (index.ts, genkit.config.ts)
+// and imported where needed. This keeps utils.ts focused on utility functions.
