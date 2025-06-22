@@ -5,7 +5,7 @@
     "lint": "eslint --ext .js,.ts .",
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "test": "jest",
+    "test": "vitest run",
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
@@ -29,20 +29,19 @@
   },
   "devDependencies": {
     "@types/imap": "^0.8.40",
-    "@types/jest": "^30.0.0",
     "@types/mailparser": "^3.4.4",
     "@types/nodemailer": "^6.4.15",
     "@typescript-eslint/eslint-plugin": "^8.34.1",
     "@typescript-eslint/parser": "^8.34.1",
+    "@vitest/coverage-v8": "^1.6.0",
     "eslint": "^8.9.0",
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-import": "^2.25.4",
     "firebase-functions-test": "^3.1.0",
     "genkit-cli": "^1.13.0",
-    "jest": "^30.0.2",
-    "ts-jest": "^29.4.0",
     "tsx": "^4.20.3",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^1.6.0"
   },
   "private": true
 }
