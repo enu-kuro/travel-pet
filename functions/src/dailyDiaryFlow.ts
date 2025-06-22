@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { PetProfile, DiaryEntry, sendEmail } from "./utils.js";
-import { db } from "./index.js";
-import { ai } from "./genkit.config.js";
+import { PetProfile, DiaryEntry, sendEmail } from "./utils";
+import { db } from "./index";
+import { ai } from "./genkit.config";
 
 // Zod schemas for input/output validation
 const DailyDiaryInputSchema = z.object({
