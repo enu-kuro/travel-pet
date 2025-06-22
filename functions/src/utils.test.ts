@@ -1,33 +1,21 @@
-import { describe, it, expect, vi } from "vitest";
-import { sendEmail, getAliasEmailAddress, getImapClient } from "./utils";
-import nodemailer from "nodemailer";
-import Imap from "imap";
-import { SecretProvider } from "./config";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { sendEmail, getAliasEmailAddress, getImapClient } from "./utils.js";
+import { SecretProvider } from "./config.js";
 
-// Mock nodemailer
-vi.mock("nodemailer", () => {
-  const mockSendMailFn = vi.fn().mockResolvedValue(undefined);
-  const mockCreateTransportFn = vi.fn().mockReturnValue({
-    sendMail: mockSendMailFn,
-  });
-  return {
-    default: {
-      createTransport: mockCreateTransportFn,
-    },
-  };
-});
-
-// Mock Imap
-vi.mock("imap", () => ({
-  default: vi.fn().mockImplementation(() => ({
-    connect: vi.fn(),
-    once: vi.fn(),
-    end: vi.fn(),
-    // Add other methods if needed
-  })),
+vi.mock("nodemailer", () => ({
+  default: {
+    createTransport: vi.fn(),
+  },
 }));
 
-// モックSecretProvider
+vi.mock("imap", () => ({
+  default: vi.fn(),
+}));
+
+// モックしたモジュールをインポート
+import nodemailer from "nodemailer";
+import Imap from "imap";
+
 class MockSecretProvider implements SecretProvider {
   constructor(
     private email: string = "test@example.com",
@@ -41,113 +29,149 @@ class MockSecretProvider implements SecretProvider {
   async getEmailAppPassword(): Promise<string> {
     return this.password;
   }
-
-  // Add getOpenAiApiKey if it's part of the SecretProvider interface and used elsewhere
-  async getOpenAiApiKey(): Promise<string> {
-    return "openai-key";
-  }
 }
 
 describe("utils", () => {
+  const mockSendMail = vi.fn();
+  const mockTransporter = { sendMail: mockSendMail };
+  const mockImapInstance = {
+    connect: vi.fn(),
+    once: vi.fn(),
+    end: vi.fn(),
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // モックの設定
+    vi.mocked(nodemailer.createTransport).mockReturnValue(
+      mockTransporter as any
+    );
+    vi.mocked(Imap).mockReturnValue(mockImapInstance as any);
+    mockSendMail.mockResolvedValue(undefined);
   });
+
   describe("sendEmail", () => {
-    it("should send an email with the correct parameters when senderName is provided", async () => {
-      const to = "recipient@example.com";
-      const subject = "Test Subject";
-      const body = "Test Body";
-      const senderName = "Test Sender";
+    it("should send email with senderName", async () => {
       const mockProvider = new MockSecretProvider();
 
-      await sendEmail(to, subject, body, senderName, mockProvider);
+      await sendEmail(
+        "recipient@example.com",
+        "Test Subject",
+        "Test Body",
+        "Test Sender",
+        mockProvider
+      );
 
       expect(nodemailer.createTransport).toHaveBeenCalledWith({
         service: "gmail",
         auth: { user: "test@example.com", pass: "testpass123" },
       });
-      // Check the sendMail on the instance returned by createTransport
-      expect((nodemailer.createTransport as any).mock.results[0].value.sendMail).toHaveBeenCalledWith({
-        from: `${senderName} <test+travel-pet@example.com>`,
-        to,
-        subject,
-        text: body,
+
+      expect(mockSendMail).toHaveBeenCalledWith({
+        from: "Test Sender <test+travel-pet@example.com>",
+        to: "recipient@example.com",
+        subject: "Test Subject",
+        text: "Test Body",
       });
     });
 
-    it("should send an email with the correct parameters when senderName is not provided", async () => {
-      const to = "recipient@example.com";
-      const subject = "Test Subject";
-      const body = "Test Body";
+    it("should send email without senderName", async () => {
       const mockProvider = new MockSecretProvider();
 
-      await sendEmail(to, subject, body, undefined, mockProvider);
+      await sendEmail(
+        "recipient@example.com",
+        "Test Subject",
+        "Test Body",
+        undefined,
+        mockProvider
+      );
 
-      expect(nodemailer.createTransport).toHaveBeenCalledWith({
-        service: "gmail",
-        auth: { user: "test@example.com", pass: "testpass123" },
-      });
-      expect((nodemailer.createTransport as any).mock.results[0].value.sendMail).toHaveBeenCalledWith({
+      expect(mockSendMail).toHaveBeenCalledWith({
         from: "test+travel-pet@example.com",
-        to,
-        subject,
-        text: body,
+        to: "recipient@example.com",
+        subject: "Test Subject",
+        text: "Test Body",
       });
+    });
+
+    it("should handle email sending errors", async () => {
+      const mockProvider = new MockSecretProvider();
+      mockSendMail.mockRejectedValueOnce(new Error("SMTP error"));
+
+      await expect(
+        sendEmail(
+          "test@example.com",
+          "Subject",
+          "Body",
+          undefined,
+          mockProvider
+        )
+      ).rejects.toThrow("SMTP error");
     });
   });
 
-  describe('getAliasEmailAddress', () => {
-    it('should generate correct alias email with +travel-pet suffix', async () => {
+  describe("getAliasEmailAddress", () => {
+    it("should generate alias email with +travel-pet suffix", async () => {
       const mockProvider = new MockSecretProvider("user@gmail.com");
-      const aliasEmail = await getAliasEmailAddress(mockProvider);
-
-      expect(aliasEmail).toBe("user+travel-pet@gmail.com");
+      const result = await getAliasEmailAddress(mockProvider);
+      expect(result).toBe("user+travel-pet@gmail.com");
     });
 
-    it('should handle different email domains', async () => {
+    it("should handle different domains", async () => {
       const mockProvider = new MockSecretProvider("test@yahoo.com");
-      const aliasEmail = await getAliasEmailAddress(mockProvider);
-
-      expect(aliasEmail).toBe("test+travel-pet@yahoo.com");
+      const result = await getAliasEmailAddress(mockProvider);
+      expect(result).toBe("test+travel-pet@yahoo.com");
     });
 
-    it('should handle complex email addresses', async () => {
-      const mockProvider = new MockSecretProvider("john.doe+existing@company.co.jp");
-      const aliasEmail = await getAliasEmailAddress(mockProvider);
-
-      expect(aliasEmail).toBe("john.doe+existing+travel-pet@company.co.jp");
+    it("should handle existing plus in email", async () => {
+      const mockProvider = new MockSecretProvider(
+        "john.doe+existing@company.co.jp"
+      );
+      const result = await getAliasEmailAddress(mockProvider);
+      expect(result).toBe("john.doe+existing+travel-pet@company.co.jp");
     });
 
-    it('should throw error for invalid email format (no @ symbol)', async () => {
+    it("should throw error for invalid email (no @)", async () => {
       const mockProvider = new MockSecretProvider("invalid-email");
-
-      await expect(getAliasEmailAddress(mockProvider)).rejects.toThrow("Invalid email format: invalid-email");
+      await expect(getAliasEmailAddress(mockProvider)).rejects.toThrow(
+        "Invalid email format: invalid-email"
+      );
     });
 
-    it('should throw error for email with empty local part', async () => {
+    it("should throw error for empty local part", async () => {
       const mockProvider = new MockSecretProvider("@domain.com");
-
-      await expect(getAliasEmailAddress(mockProvider)).rejects.toThrow("Invalid email format: @domain.com");
+      await expect(getAliasEmailAddress(mockProvider)).rejects.toThrow(
+        "Invalid email format: @domain.com"
+      );
     });
 
-    it('should throw error for email with empty domain', async () => {
+    it("should throw error for empty domain", async () => {
       const mockProvider = new MockSecretProvider("user@");
-
-      await expect(getAliasEmailAddress(mockProvider)).rejects.toThrow("Invalid email format: user@");
+      await expect(getAliasEmailAddress(mockProvider)).rejects.toThrow(
+        "Invalid email format: user@"
+      );
     });
   });
 
   describe("getImapClient", () => {
-    it("should create an Imap instance with the correct parameters", async () => {
-      const mockProvider = new MockSecretProvider();
-      await getImapClient(mockProvider);
+    it("should create Imap client with correct config", async () => {
+      const mockProvider = new MockSecretProvider(
+        "user@gmail.com",
+        "password123"
+      );
+
+      const result = await getImapClient(mockProvider);
+
       expect(Imap).toHaveBeenCalledWith({
-        user: "test@example.com",
-        password: "testpass123",
+        user: "user@gmail.com",
+        password: "password123",
         host: "imap.gmail.com",
         port: 993,
         tls: true,
       });
+
+      expect(result).toBe(mockImapInstance);
     });
   });
 });
