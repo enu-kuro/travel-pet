@@ -1,158 +1,204 @@
 import { initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-import { onCallGenkit } from "firebase-functions/https";
+import { onCallGenkit } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
-import { defineSecret } from "firebase-functions/params";
 import { simpleParser } from "mailparser";
 import { Readable } from "stream";
 
-import { createPetFlow } from "./createPetFlow";
-import { dailyDiaryFlow } from "./dailyDiaryFlow";
+import {
+  createPetFlow,
+  savePetToFirestore,
+  sendPetCreationEmail,
+} from "./createPetFlow";
+import {
+  dailyDiaryFlow,
+  getPetFromFirestore,
+  saveDiaryToFirestore,
+  sendDiaryEmail,
+} from "./dailyDiaryFlow";
 import { getImapClient, getAliasEmailAddress } from "./utils";
+import {
+  EMAIL_ADDRESS,
+  EMAIL_APP_PASSWORD,
+  SecretProvider,
+  FirebaseSecretProvider,
+} from "./config";
 
 initializeApp();
 export const db = getFirestore();
 
-export const EMAIL_ADDRESS = defineSecret("EMAIL_ADDRESS");
-export const EMAIL_APP_PASSWORD = defineSecret("EMAIL_APP_PASSWORD");
-export const GEMINI_API_KEY = defineSecret("GEMINI_API_KEY");
-
 export const createPet = onCallGenkit(createPetFlow);
 export const generateDiary = onCallGenkit(dailyDiaryFlow);
 
-// 修正版: エイリアス宛メールのみを対象とし、他のメールには一切触らない
-async function checkNewEmailsAndCreatePet(): Promise<void> {
-  const imap = await getImapClient();
-  const aliasEmail = await getAliasEmailAddress();
+// テスト用のインターフェース
+export interface EmailProcessor {
+  checkExistingPet(email: string): Promise<boolean>;
+  createPet(email: string): Promise<void>;
+}
 
-  console.log(`Checking for emails sent to: ${aliasEmail}`);
+export class FirestoreEmailProcessor implements EmailProcessor {
+  constructor(private firestore: FirebaseFirestore.Firestore) {}
+
+  async checkExistingPet(email: string): Promise<boolean> {
+    const existingPet = await this.firestore
+      .collection("pets")
+      .where("email", "==", email)
+      .limit(1)
+      .get();
+
+    return !existingPet.empty;
+  }
+
+  async createPet(email: string): Promise<void> {
+    // AI処理のみ実行
+    const result = await createPetFlow({ email });
+
+    // Firestore保存
+    const petId = await savePetToFirestore(email, result.profile);
+
+    // メール送信
+    await sendPetCreationEmail(email, result.profile);
+  }
+}
+
+// メール処理（シンプル版）
+export async function processEmailMessage(
+  stream: Readable,
+  seqno: number,
+  processor: EmailProcessor
+): Promise<void> {
+  const parsed = await simpleParser(stream);
+  const senderEmail = parsed.from?.value[0]?.address;
+
+  if (!senderEmail) {
+    console.log(`No sender found in message ${seqno}`);
+    return;
+  }
+
+  console.log(`Processing email from: ${senderEmail}`);
+
+  const petExists = await processor.checkExistingPet(senderEmail);
+  if (petExists) {
+    console.log(`Pet already exists for ${senderEmail}`);
+    return;
+  }
+
+  console.log(`Creating pet for: ${senderEmail}`);
+  await processor.createPet(senderEmail);
+  console.log(`Pet created for: ${senderEmail}`);
+}
+
+export async function checkNewEmailsAndCreatePet(
+  secretProvider: SecretProvider = new FirebaseSecretProvider(),
+  processor: EmailProcessor = new FirestoreEmailProcessor(db)
+): Promise<void> {
+  const imap = await getImapClient(secretProvider);
+  const aliasEmail = await getAliasEmailAddress(secretProvider);
+
+  console.log(`Checking emails for: ${aliasEmail}`);
 
   return new Promise((resolve, reject) => {
     imap.once("ready", () => {
-      imap.openBox("INBOX", false, (err) => {
-        if (err) {
-          reject(err);
-          return;
-        }
+      imap.openBox("INBOX", false, (err: Error) => {
+        if (err) return reject(err);
 
-        // 重要: エイリアス宛の未読メールのみを検索
-        // 他のメールは検索結果に含まれないため、一切触られない
-        imap.search(["UNSEEN", ["TO", aliasEmail]], (searchErr, results) => {
-          if (searchErr) {
-            reject(searchErr);
-            return;
-          }
+        imap.search(
+          ["UNSEEN", ["TO", aliasEmail]],
+          async (searchErr: Error, results: number[]) => {
+            if (searchErr) return reject(searchErr);
 
-          if (results.length === 0) {
-            console.log(`No new emails found for ${aliasEmail}`);
-            imap.end();
-            resolve();
-            return;
-          }
+            if (results.length === 0) {
+              console.log("No new emails found");
+              imap.end();
+              return resolve();
+            }
 
-          console.log(`Found ${results.length} emails for ${aliasEmail}`);
+            console.log(`Found ${results.length} emails`);
+            const fetch = imap.fetch(results, { bodies: "" });
+            let processed = 0;
 
-          const fetch = imap.fetch(results, { bodies: "" });
-          let processedCount = 0;
-          let hasError = false;
-
-          const checkCompletion = () => {
-            processedCount++;
-            if (processedCount === results.length) {
-              // エイリアス宛メールのみを既読にマーク
-              imap.addFlags(results, ["\\Seen"], (flagErr) => {
-                if (flagErr) {
-                  console.error("Error marking alias emails as read:", flagErr);
+            fetch.on("message", (msg: any, seqno: number) => {
+              msg.on("body", async (stream: Readable) => {
+                try {
+                  await processEmailMessage(stream, seqno, processor);
+                } catch (error) {
+                  console.error(`Error processing email ${seqno}:`, error);
                 }
-                imap.end();
-                if (hasError) {
-                  reject(new Error("Some emails failed to process"));
-                } else {
-                  resolve();
+
+                processed++;
+                if (processed === results.length) {
+                  imap.addFlags(results, ["\\Seen"], () => {
+                    imap.end();
+                    resolve();
+                  });
                 }
               });
-            }
-          };
-
-          fetch.on("message", (msg, seqno) => {
-            msg.on("body", async (stream: Readable) => {
-              try {
-                const parsed = await simpleParser(stream);
-                const senderEmail = parsed.from?.value[0]?.address;
-
-                if (!senderEmail) {
-                  console.log(
-                    `No sender found in message ${seqno} (alias email)`
-                  );
-                  checkCompletion();
-                  return;
-                }
-
-                console.log(`Processing alias email from: ${senderEmail}`);
-
-                // ペット存在チェック
-                const existingPet = await db
-                  .collection("pets")
-                  .where("email", "==", senderEmail)
-                  .limit(1)
-                  .get();
-
-                if (!existingPet.empty) {
-                  console.log(`Pet already exists for ${senderEmail}`);
-                  checkCompletion();
-                  return;
-                }
-
-                // ペット作成
-                console.log(`Creating pet for: ${senderEmail}`);
-                await createPetFlow({ email: senderEmail });
-                console.log(`Pet creation completed for: ${senderEmail}`);
-
-                checkCompletion();
-              } catch (error) {
-                console.error(`Error processing alias email ${seqno}:`, error);
-                hasError = true;
-                checkCompletion();
-              }
             });
-          });
 
-          fetch.once("error", (fetchErr) => {
-            console.error("Fetch error:", fetchErr);
-            hasError = true;
-            imap.end();
-            reject(fetchErr);
-          });
-
-          fetch.once("end", () => {
-            console.log("Done fetching all alias emails");
-          });
-        });
+            fetch.once("error", reject);
+          }
+        );
       });
     });
 
-    imap.once("error", (err: Error) => {
-      console.error("IMAP connection error:", err);
-      reject(err);
-    });
-
+    imap.once("error", reject);
     imap.connect();
   });
+}
+
+// 日記生成（シンプル版）
+export async function generateDiariesForAllPets(): Promise<void> {
+  const petsSnapshot = await db.collection("pets").get();
+
+  if (petsSnapshot.empty) {
+    console.log("No pets found");
+    return;
+  }
+
+  console.log(`Processing ${petsSnapshot.size} pets`);
+
+  const promises = petsSnapshot.docs.map(async (petDoc) => {
+    const petId = petDoc.id;
+    try {
+      // Firestoreからペット情報を取得
+      const petData = await getPetFromFirestore(petId);
+      if (!petData) {
+        console.error(`Failed to get pet data for: ${petId}`);
+        return;
+      }
+
+      // AI処理のみ実行
+      const result = await dailyDiaryFlow({ profile: petData.profile });
+
+      if (result.success && result.itinerary && result.diary) {
+        // Firestoreに日記を保存
+        await saveDiaryToFirestore(petId, result.itinerary, result.diary);
+
+        // メール送信
+        await sendDiaryEmail(petData.email, result.itinerary, result.diary);
+      }
+
+      console.log(`Diary generated for pet: ${petId}`);
+    } catch (error) {
+      console.error(`Failed to generate diary for pet ${petId}:`, error);
+    }
+  });
+
+  await Promise.allSettled(promises);
+  console.log("Diary generation completed");
 }
 
 export const emailCheckTrigger = onSchedule(
   {
     schedule: "*/10 * * * *",
     timeZone: "Asia/Tokyo",
-    secrets: [EMAIL_ADDRESS, EMAIL_APP_PASSWORD, GEMINI_API_KEY],
+    secrets: [EMAIL_ADDRESS, EMAIL_APP_PASSWORD],
   },
   async () => {
     try {
-      console.log("Scheduled email check triggered for alias emails only");
       await checkNewEmailsAndCreatePet();
-      console.log("Alias email check completed");
     } catch (error) {
-      console.error("Error in emailCheckTrigger:", error);
+      console.error("Email check failed:", error);
       throw error;
     }
   }
@@ -162,41 +208,13 @@ export const dailyDiaryTrigger = onSchedule(
   {
     schedule: "0 9 * * *",
     timeZone: "Asia/Tokyo",
-    secrets: [EMAIL_ADDRESS, EMAIL_APP_PASSWORD, GEMINI_API_KEY],
+    secrets: [EMAIL_ADDRESS, EMAIL_APP_PASSWORD],
   },
   async () => {
     try {
-      console.log("Starting daily diary generation for all pets");
-      const petsSnapshot = await db.collection("pets").get();
-
-      if (petsSnapshot.empty) {
-        console.log("No pets found to generate diaries for");
-        return;
-      }
-
-      console.log(`Found ${petsSnapshot.size} pets to process`);
-
-      const promises = petsSnapshot.docs.map(async (petDoc) => {
-        const petId = petDoc.id;
-        try {
-          console.log(`Processing diary for pet: ${petId}`);
-          await dailyDiaryFlow({ petId });
-          console.log(`Diary generated successfully for pet: ${petId}`);
-        } catch (flowError) {
-          console.error(`Error generating diary for pet ${petId}:`, flowError);
-        }
-      });
-
-      const results = await Promise.allSettled(promises);
-
-      const fulfilled = results.filter((r) => r.status === "fulfilled").length;
-      const rejected = results.filter((r) => r.status === "rejected").length;
-
-      console.log(
-        `Daily diary generation completed. Success: ${fulfilled}, Failed: ${rejected}`
-      );
+      await generateDiariesForAllPets();
     } catch (error) {
-      console.error("Error in dailyDiaryTrigger:", error);
+      console.error("Diary generation failed:", error);
       throw error;
     }
   }

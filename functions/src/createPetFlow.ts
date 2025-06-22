@@ -1,8 +1,8 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
-import { PetProfile, sendEmail } from "./utils";
-import { db } from "./index"; // Import the ai instance
-import { ai } from "./genkit.config";
+import { PetProfile, sendEmail } from "./utils.js";
+import { db } from "./index.js";
+import { ai } from "./genkit.config.js";
 
 // Zod schemas for input/output validation
 const CreatePetInputSchema = z.object({
@@ -10,11 +10,10 @@ const CreatePetInputSchema = z.object({
 });
 
 const CreatePetOutputSchema = z.object({
-  petId: z.string(),
   profile: z.string(),
 });
 
-// Flow #1: Pet Creation Flow
+// Flow #1: Pet Creation Flow (AI処理のみ)
 export const createPetFlow = ai.defineFlow(
   {
     name: "createPetFlow",
@@ -22,14 +21,14 @@ export const createPetFlow = ai.defineFlow(
     outputSchema: CreatePetOutputSchema,
   },
   async (input) => {
-    // TODO: Validate email format
-    console.log(`Creating pet for email: ${input.email}`);
+    console.log(`Generating pet profile for email: ${input.email}`);
 
     /* eslint-disable @typescript-eslint/no-unused-vars */
     const inputSchema = z.object({});
     const outputSchema = z.object({ profile: z.string() });
     /* eslint-enable @typescript-eslint/no-unused-vars */
 
+    // AI処理のみ: Generate pet profile
     const petProfilePrompt = ai.prompt<typeof inputSchema, typeof outputSchema>(
       "create-pet-profile"
     );
@@ -37,24 +36,42 @@ export const createPetFlow = ai.defineFlow(
     if (!output || !output.profile) {
       throw new Error("Failed to generate pet profile");
     }
-    const profile = output.profile;
 
-    // Step B: Persist to Firestore
-    const petRef = db.collection("pets").doc();
-    const petId = petRef.id;
+    console.log(`Pet profile generated for: ${input.email}`);
 
-    const petData: PetProfile = {
-      email: input.email,
-      profile: profile,
-      createdAt: Timestamp.fromDate(new Date()),
+    return {
+      profile: output.profile,
     };
+  }
+);
 
-    await petRef.set(petData);
-    console.log(`Pet created with ID: ${petId}`);
+// 分離されたFirestore保存関数
+export async function savePetToFirestore(
+  email: string,
+  profile: string
+): Promise<string> {
+  const petRef = db.collection("pets").doc();
+  const petId = petRef.id;
 
-    // Step C: Send creation complete email (mocked)
-    const subject = "[旅ペット作成完了]";
-    const body = `
+  const petData: PetProfile = {
+    email: email,
+    profile: profile,
+    createdAt: Timestamp.fromDate(new Date()),
+  };
+
+  await petRef.set(petData);
+  console.log(`Pet saved to Firestore with ID: ${petId}`);
+
+  return petId;
+}
+
+// 分離されたメール送信関数
+export async function sendPetCreationEmail(
+  email: string,
+  profile: string
+): Promise<void> {
+  const subject = "[旅ペット作成完了]";
+  const body = `
 こんにちは！
 
 あなたの旅ペットが誕生しました🎉
@@ -67,12 +84,6 @@ ${profile}
 旅ペットチーム
 `;
 
-    await sendEmail(input.email, subject, body);
-    console.log(`Creation email sent to: ${input.email}`);
-
-    return {
-      petId: petId,
-      profile: profile,
-    };
-  }
-);
+  await sendEmail(email, subject, body);
+  console.log(`Creation email sent to: ${email}`);
+}

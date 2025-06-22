@@ -1,4 +1,9 @@
-// Interface definitions
+import nodemailer from "nodemailer";
+import Imap from "imap";
+import { SecretProvider, FirebaseSecretProvider } from "./config";
+
+const ALIAS_SUFFIX = "+travel-pet";
+
 export interface PetProfile {
   email: string;
   profile: string;
@@ -10,67 +15,54 @@ export interface DiaryEntry {
   diary: string;
   date: string;
 }
-import nodemailer from "nodemailer";
-import Imap from "imap";
-import { EMAIL_ADDRESS, EMAIL_APP_PASSWORD } from "./index";
 
-const ALIAS_SUFFIX = "+travel-pet";
-
-// Email client setup using nodemailer with App Password
-async function getEmailTransporter() {
-  const user = await EMAIL_ADDRESS.value();
-  const pass = await EMAIL_APP_PASSWORD.value();
-
-  return nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user,
-      pass,
-    },
-  });
-}
-
+// シンプルなメール送信
 export async function sendEmail(
   to: string,
   subject: string,
   body: string,
-  senderName?: string // オプショナル
-) {
-  const transporter = await getEmailTransporter();
-  const aliasEmail = await getAliasEmailAddress();
+  senderName?: string,
+  secretProvider: SecretProvider = new FirebaseSecretProvider()
+): Promise<void> {
+  const user = await secretProvider.getEmailAddress();
+  const pass = await secretProvider.getEmailAppPassword();
+  const aliasEmail = await getAliasEmailAddress(secretProvider);
 
-  // senderNameがあれば使う、なければエイリアスのみ
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: { user, pass },
+  });
+
   const fromField = senderName ? `${senderName} <${aliasEmail}>` : aliasEmail;
 
-  const mailOptions = {
+  await transporter.sendMail({
     from: fromField,
-    to: to,
-    subject: subject,
+    to,
+    subject,
     text: body,
-  };
+  });
 
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log(
-      `Email sent to: ${to}, Subject: ${subject}, From: ${fromField}`
-    );
-  } catch (error) {
-    console.error("Error sending email:", error);
-    throw error;
-  }
+  console.log(`Email sent to: ${to}, Subject: ${subject}`);
 }
 
-// Get alias email address for sending
-export async function getAliasEmailAddress(): Promise<string> {
-  const baseEmail = await EMAIL_ADDRESS.value();
+export async function getAliasEmailAddress(
+  secretProvider: SecretProvider = new FirebaseSecretProvider()
+): Promise<string> {
+  const baseEmail = await secretProvider.getEmailAddress();
   const [localPart, domain] = baseEmail.split("@");
+
+  if (!localPart || !domain) {
+    throw new Error(`Invalid email format: ${baseEmail}`);
+  }
+
   return `${localPart}${ALIAS_SUFFIX}@${domain}`;
 }
 
-// IMAP client setup for reading emails
-export async function getImapClient() {
-  const user = await EMAIL_ADDRESS.value();
-  const password = await EMAIL_APP_PASSWORD.value();
+export async function getImapClient(
+  secretProvider: SecretProvider = new FirebaseSecretProvider()
+): Promise<any> {
+  const user = await secretProvider.getEmailAddress();
+  const password = await secretProvider.getEmailAppPassword();
 
   return new Imap({
     user,

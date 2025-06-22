@@ -30,6 +30,7 @@ Travel Pet digital companion service that creates virtual pets for users and sen
 │   │   ├── createPetFlow.ts  # Pet creation logic (editable)
 │   │   ├── dailyDiaryFlow.ts # Diary generation logic (editable)
 │   │   ├── genkit.config.ts  # Genkit plugin and flow configuration
+│   │   ├── config.ts         # Configuration settings (editable)
 │   │   ├── index.ts          # Main Cloud Functions entry point (editable)
 │   │   └── utils.ts          # Email and utility functions (editable)
 │   ├── tsconfig.dev.json     # TypeScript configuration for development
