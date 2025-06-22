@@ -25,8 +25,10 @@ export const createPetFlow = ai.defineFlow(
     // TODO: Validate email format
     console.log(`Creating pet for email: ${input.email}`);
 
+    /* eslint-disable @typescript-eslint/no-unused-vars */
     const inputSchema = z.object({});
     const outputSchema = z.object({ profile: z.string() });
+    /* eslint-enable @typescript-eslint/no-unused-vars */
 
     const petProfilePrompt = ai.prompt<typeof inputSchema, typeof outputSchema>(
       "create-pet-profile"

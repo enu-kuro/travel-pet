@@ -60,8 +60,11 @@ Required secrets (Firebase Secret Manager):
 **Important:** Always use `+travel-pet` alias for service emails.
 
 ## 🚀 Development Commands
-TODO:
 ```bash
+# Run unit tests
+npm run test
+# Run linter
+npm run lint
 ```
 
 ## 📧 Email Handling Rules

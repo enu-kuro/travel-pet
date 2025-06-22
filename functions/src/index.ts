@@ -29,7 +29,7 @@ async function checkNewEmailsAndCreatePet(): Promise<void> {
 
   return new Promise((resolve, reject) => {
     imap.once("ready", () => {
-      imap.openBox("INBOX", false, (err, box) => {
+      imap.openBox("INBOX", false, (err) => {
         if (err) {
           reject(err);
           return;
@@ -75,7 +75,7 @@ async function checkNewEmailsAndCreatePet(): Promise<void> {
           };
 
           fetch.on("message", (msg, seqno) => {
-            msg.on("body", async (stream: Readable, info) => {
+            msg.on("body", async (stream: Readable) => {
               try {
                 const parsed = await simpleParser(stream);
                 const senderEmail = parsed.from?.value[0]?.address;
