@@ -55,7 +55,7 @@ export class FirestoreEmailProcessor implements EmailProcessor {
 
     // Firestore保存
     const petId = await savePetToFirestore(email, result.profile);
-
+    console.log(`Pet created with ID: ${petId}`);
     // メール送信
     await sendPetCreationEmail(email, result.profile);
   }
@@ -117,6 +117,7 @@ export async function checkNewEmailsAndCreatePet(
             const fetch = imap.fetch(results, { bodies: "" });
             let processed = 0;
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             fetch.on("message", (msg: any, seqno: number) => {
               msg.on("body", async (stream: Readable) => {
                 try {

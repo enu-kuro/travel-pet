@@ -45,8 +45,10 @@ describe("utils", () => {
 
     // モックの設定
     vi.mocked(nodemailer.createTransport).mockReturnValue(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockTransporter as any
     );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(Imap).mockReturnValue(mockImapInstance as any);
     mockSendMail.mockResolvedValue(undefined);
   });

@@ -60,6 +60,7 @@ export async function getAliasEmailAddress(
 
 export async function getImapClient(
   secretProvider: SecretProvider = new FirebaseSecretProvider()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
   const user = await secretProvider.getEmailAddress();
   const password = await secretProvider.getEmailAppPassword();
