@@ -18,8 +18,8 @@ describe("dailyDiaryFlow helpers", () => {
       const docMock = vi.fn().mockReturnValue({ get: getMock });
       const collectionMock = vi.fn().mockReturnValue({ doc: docMock });
 
-      vi.spyOn(index.db, "collection").mockImplementation(
-        collectionMock as any
+      vi.spyOn(index.db as unknown as FirebaseFirestore.Firestore, "collection").mockImplementation(
+        collectionMock as unknown as (collectionPath: string) => FirebaseFirestore.CollectionReference<FirebaseFirestore.DocumentData>
       );
 
       const result = await getPetFromFirestore("nonexistentId");
@@ -39,8 +39,8 @@ describe("dailyDiaryFlow helpers", () => {
       const docMock = vi.fn().mockReturnValue({ get: getMock });
       const collectionMock = vi.fn().mockReturnValue({ doc: docMock });
 
-      vi.spyOn(index.db, "collection").mockImplementation(
-        collectionMock as any
+      vi.spyOn(index.db as unknown as FirebaseFirestore.Firestore, "collection").mockImplementation(
+        collectionMock as unknown as (collectionPath: string) => FirebaseFirestore.CollectionReference<FirebaseFirestore.DocumentData>
       );
 
       const result = await getPetFromFirestore("petId123");
@@ -73,8 +73,8 @@ describe("dailyDiaryFlow helpers", () => {
         .mockReturnValue({ collection: diariesCollectionMock });
       const collectionMock = vi.fn().mockReturnValue({ doc: petDocRefMock });
 
-      vi.spyOn(index.db, "collection").mockImplementation(
-        collectionMock as any
+      vi.spyOn(index.db as unknown as FirebaseFirestore.Firestore, "collection").mockImplementation(
+        collectionMock as unknown as (collectionPath: string) => FirebaseFirestore.CollectionReference<FirebaseFirestore.DocumentData>
       );
 
       await saveDiaryToFirestore(petId, itinerary, diary);

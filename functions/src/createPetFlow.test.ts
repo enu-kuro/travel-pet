@@ -14,7 +14,10 @@ describe("createPetFlow helpers", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Spy on Firestore collection
-    vi.spyOn(index.db, "collection").mockImplementation(collectionMock as any);
+    // Cast to Firestore to satisfy spyOn, then cast mockImplementation arg
+    vi.spyOn(index.db as unknown as FirebaseFirestore.Firestore, "collection").mockImplementation(
+      collectionMock as unknown as (collectionPath: string) => FirebaseFirestore.CollectionReference<FirebaseFirestore.DocumentData>
+    );
   });
 
   describe("savePetToFirestore", () => {

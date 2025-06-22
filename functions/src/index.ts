@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-import { onCallGenkit } from "firebase-functions/v2/https";
+import { onCall, onCallGenkit } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { simpleParser } from "mailparser";
 import { Readable } from "stream";
@@ -204,6 +204,51 @@ export const emailCheckTrigger = onSchedule(
     }
   }
 );
+
+// Helper function for generateDiariesForAllPets HTTP logic
+async function generateDiariesForAllPetsHandler(
+  generateDiariesFn: () => Promise<void>
+) {
+  try {
+    await generateDiariesFn();
+    return { success: true, message: "Diary generation started." };
+  } catch (error) {
+    console.error("HTTP trigger for diary generation failed:", error);
+    return { success: false, message: "Diary generation failed.", error: (error as Error).message } as { success: boolean; message: string; error?: string };
+  }
+}
+
+// Helper function for checkNewEmailsAndCreatePet HTTP logic
+async function checkNewEmailsAndCreatePetHandler(
+  checkEmailsFn: () => Promise<void>
+) {
+  try {
+    await checkEmailsFn();
+    return { success: true, message: "Email check and pet creation started." };
+  } catch (error) {
+    console.error("HTTP trigger for email check failed:", error);
+    return { success: false, message: "Email check failed.", error: (error as Error).message } as { success: boolean; message: string; error?: string };
+  }
+}
+
+// HTTP-callableラッパー関数
+export const generateDiariesForAllPetsHttp = onCall(
+  { secrets: [EMAIL_ADDRESS, EMAIL_APP_PASSWORD] },
+  // In production, pass the actual functions
+  async (_request) => generateDiariesForAllPetsHandler(generateDiariesForAllPets)
+);
+
+export const checkNewEmailsAndCreatePetHttp = onCall(
+  { secrets: [EMAIL_ADDRESS, EMAIL_APP_PASSWORD] },
+  // In production, pass the actual functions
+  async (_request) => checkNewEmailsAndCreatePetHandler(checkNewEmailsAndCreatePet)
+);
+
+// Export handlers for testing purposes
+export const testing = {
+  generateDiariesForAllPetsHandler,
+  checkNewEmailsAndCreatePetHandler,
+};
 
 export const dailyDiaryTrigger = onSchedule(
   {
