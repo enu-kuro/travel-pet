@@ -5,13 +5,17 @@ import Imap from "imap";
 import { SecretProvider } from "./config";
 
 // Mock nodemailer
-vi.mock("nodemailer", () => ({
-  default: {
-    createTransport: vi.fn().mockReturnValue({
-      sendMail: vi.fn().mockResolvedValue(undefined),
-    }),
-  },
-}));
+vi.mock("nodemailer", () => {
+  const mockSendMailFn = vi.fn().mockResolvedValue(undefined);
+  const mockCreateTransportFn = vi.fn().mockReturnValue({
+    sendMail: mockSendMailFn,
+  });
+  return {
+    default: {
+      createTransport: mockCreateTransportFn,
+    },
+  };
+});
 
 // Mock Imap
 vi.mock("imap", () => ({
@@ -45,6 +49,9 @@ class MockSecretProvider implements SecretProvider {
 }
 
 describe("utils", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
   describe("sendEmail", () => {
     it("should send an email with the correct parameters when senderName is provided", async () => {
       const to = "recipient@example.com";
@@ -59,9 +66,8 @@ describe("utils", () => {
         service: "gmail",
         auth: { user: "test@example.com", pass: "testpass123" },
       });
-      expect(
-        nodemailer.createTransport().sendMail
-      ).toHaveBeenCalledWith({
+      // Check the sendMail on the instance returned by createTransport
+      expect((nodemailer.createTransport as any).mock.results[0].value.sendMail).toHaveBeenCalledWith({
         from: `${senderName} <test+travel-pet@example.com>`,
         to,
         subject,
@@ -81,9 +87,7 @@ describe("utils", () => {
         service: "gmail",
         auth: { user: "test@example.com", pass: "testpass123" },
       });
-      expect(
-        nodemailer.createTransport().sendMail
-      ).toHaveBeenCalledWith({
+      expect((nodemailer.createTransport as any).mock.results[0].value.sendMail).toHaveBeenCalledWith({
         from: "test+travel-pet@example.com",
         to,
         subject,
