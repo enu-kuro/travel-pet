@@ -10,15 +10,16 @@ export interface DiaryEntry {
   diary: string;
   date: string;
 }
-
 import nodemailer from "nodemailer";
-import Imap from "imap"; // Add Imap import
-import { EMAIL_ADDRESS, EMAIL_APP_PASSWORD } from "./index"; // Import secrets
+import Imap from "imap";
+import { EMAIL_ADDRESS, EMAIL_APP_PASSWORD } from "./index";
+
+const ALIAS_SUFFIX = "+travel-pet";
 
 // Email client setup using nodemailer with App Password
 async function getEmailTransporter() {
-  const user = EMAIL_ADDRESS.value(); // Access secret value
-  const pass = EMAIL_APP_PASSWORD.value(); // Access secret value
+  const user = await EMAIL_ADDRESS.value();
+  const pass = await EMAIL_APP_PASSWORD.value();
 
   return nodemailer.createTransport({
     service: "gmail",
@@ -29,10 +30,20 @@ async function getEmailTransporter() {
   });
 }
 
-export async function sendEmail(to: string, subject: string, body: string) {
+export async function sendEmail(
+  to: string,
+  subject: string,
+  body: string,
+  senderName?: string // オプショナル
+) {
   const transporter = await getEmailTransporter();
+  const aliasEmail = await getAliasEmailAddress();
+
+  // senderNameがあれば使う、なければエイリアスのみ
+  const fromField = senderName ? `${senderName} <${aliasEmail}>` : aliasEmail;
+
   const mailOptions = {
-    from: EMAIL_ADDRESS.value(), // Access secret value
+    from: fromField,
     to: to,
     subject: subject,
     text: body,
@@ -40,17 +51,26 @@ export async function sendEmail(to: string, subject: string, body: string) {
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log(`Email sent to: ${to}, Subject: ${subject}`);
+    console.log(
+      `Email sent to: ${to}, Subject: ${subject}, From: ${fromField}`
+    );
   } catch (error) {
     console.error("Error sending email:", error);
-    throw error; // Re-throw the error to be handled by the caller
+    throw error;
   }
+}
+
+// Get alias email address for sending
+export async function getAliasEmailAddress(): Promise<string> {
+  const baseEmail = await EMAIL_ADDRESS.value();
+  const [localPart, domain] = baseEmail.split("@");
+  return `${localPart}${ALIAS_SUFFIX}@${domain}`;
 }
 
 // IMAP client setup for reading emails
 export async function getImapClient() {
-  const user = EMAIL_ADDRESS.value(); // Access secret value
-  const password = EMAIL_APP_PASSWORD.value(); // Access secret value
+  const user = await EMAIL_ADDRESS.value();
+  const password = await EMAIL_APP_PASSWORD.value();
 
   return new Imap({
     user,
@@ -58,11 +78,5 @@ export async function getImapClient() {
     host: "imap.gmail.com",
     port: 993,
     tls: true,
-    tlsOptions: {
-      rejectUnauthorized: false, // Note: For production, consider certificate validation carefully
-    },
   });
 }
-
-// Note: Firestore 'db' and Genkit 'ai' instances are initialized elsewhere (index.ts, genkit.config.ts)
-// and imported where needed. This keeps utils.ts focused on utility functions.
