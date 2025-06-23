@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { sendEmail, getAliasEmailAddress, getImapClient } from "./utils.js";
-import { SecretProvider } from "./config.js";
+import { sendEmail, getAliasEmailAddress, getImapClient } from "./utils";
+import { SecretProvider } from "./config";
 
 vi.mock("nodemailer", () => ({
   default: {
