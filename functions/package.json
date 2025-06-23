@@ -14,7 +14,7 @@
   },
   "name": "functions",
   "engines": {
-    "node": "22"
+    "node": "20"
   },
   "dependencies": {
     "@genkit-ai/firebase": "^1.13.0",
