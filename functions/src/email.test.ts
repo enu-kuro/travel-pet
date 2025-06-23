@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { sendEmail, getAliasEmailAddress, getImapClient } from "./utils";
+import { sendEmail, getAliasEmailAddress, getImapClient } from "./email";
 import { SecretProvider } from "./config";
 
 vi.mock("nodemailer", () => ({

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import * as index from "./index";
-import * as utils from "./utils";
+import * as emailUtils from "./email";
 import {
   getPetFromFirestore,
   saveDiaryToFirestore,
@@ -96,7 +96,7 @@ describe("dailyDiaryFlow helpers", () => {
     });
 
     it("should call sendEmail with correct subject and body containing diary", async () => {
-      const sendEmailMock = vi.spyOn(utils, "sendEmail").mockResolvedValue();
+      const sendEmailMock = vi.spyOn(emailUtils, "sendEmail").mockResolvedValue();
       const email = "user@example.com";
       const itinerary = "Kyoto";
       const diary = "I saw temples.";

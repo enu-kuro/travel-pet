@@ -1,6 +1,7 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
-import { PetProfile, sendEmail } from "./utils";
+import { sendEmail } from "./email";
+import { PetProfile } from "./types";
 import { db } from "./firebase";
 import { ai } from "./genkit.config";
 
