@@ -56,7 +56,6 @@ Travel Pet digital companion service that creates virtual pets for users and sen
 Required secrets (Firebase Secret Manager):
 - `EMAIL_ADDRESS`: Gmail base address (e.g., "user@gmail.com")
 - `EMAIL_APP_PASSWORD`: Gmail App Password
-- `GEMINI_API_KEY`: Google AI API key
 
 **Important:** Always use `+travel-pet` alias for service emails.
 
