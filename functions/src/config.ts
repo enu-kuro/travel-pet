@@ -2,7 +2,7 @@ import { defineSecret } from "firebase-functions/params";
 
 export const EMAIL_ADDRESS = defineSecret("EMAIL_ADDRESS");
 export const EMAIL_APP_PASSWORD = defineSecret("EMAIL_APP_PASSWORD");
-export const GEMINI_API_KEY = defineSecret("GEMINI_API_KEY");
+// export const GEMINI_API_KEY = defineSecret("GEMINI_API_KEY");
 
 export interface SecretProvider {
   getEmailAddress(): Promise<string>;

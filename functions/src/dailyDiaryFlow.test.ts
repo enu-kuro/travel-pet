@@ -19,6 +19,7 @@ describe("dailyDiaryFlow helpers", () => {
       const collectionMock = vi.fn().mockReturnValue({ doc: docMock });
 
       vi.spyOn(index.db, "collection").mockImplementation(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         collectionMock as any
       );
 
@@ -40,6 +41,7 @@ describe("dailyDiaryFlow helpers", () => {
       const collectionMock = vi.fn().mockReturnValue({ doc: docMock });
 
       vi.spyOn(index.db, "collection").mockImplementation(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         collectionMock as any
       );
 
@@ -74,6 +76,7 @@ describe("dailyDiaryFlow helpers", () => {
       const collectionMock = vi.fn().mockReturnValue({ doc: petDocRefMock });
 
       vi.spyOn(index.db, "collection").mockImplementation(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         collectionMock as any
       );
 

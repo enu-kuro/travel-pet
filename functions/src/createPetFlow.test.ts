@@ -14,6 +14,7 @@ describe("createPetFlow helpers", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Spy on Firestore collection
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.spyOn(index.db, "collection").mockImplementation(collectionMock as any);
   });
 
