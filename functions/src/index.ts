@@ -1,5 +1,4 @@
-import { initializeApp } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
+import { db } from "./firebase";
 import { onCallGenkit } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { simpleParser } from "mailparser";
@@ -24,8 +23,7 @@ import {
   FirebaseSecretProvider,
 } from "./config";
 
-initializeApp();
-export const db = getFirestore();
+export { db } from "./firebase";
 
 export const createPet = onCallGenkit(createPetFlow);
 export const generateDiary = onCallGenkit(dailyDiaryFlow);
