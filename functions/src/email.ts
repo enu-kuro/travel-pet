@@ -4,18 +4,6 @@ import { SecretProvider, FirebaseSecretProvider } from "./config";
 
 const ALIAS_SUFFIX = "+travel-pet";
 
-export interface PetProfile {
-  email: string;
-  profile: string;
-  createdAt: FirebaseFirestore.Timestamp;
-}
-
-export interface DiaryEntry {
-  itinerary: string;
-  diary: string;
-  date: string;
-}
-
 // シンプルなメール送信
 export async function sendEmail(
   to: string,

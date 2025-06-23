@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Timestamp } from "firebase-admin/firestore";
 import * as index from "./index";
-import * as utils from "./utils";
+import * as emailUtils from "./email";
 
 import { savePetToFirestore, sendPetCreationEmail } from "./createPetFlow";
 
@@ -38,7 +38,7 @@ describe("createPetFlow helpers", () => {
 
   describe("sendPetCreationEmail", () => {
     it("should call sendEmail with correct subject and body containing profile", async () => {
-      const sendEmailMock = vi.spyOn(utils, "sendEmail").mockResolvedValue();
+      const sendEmailMock = vi.spyOn(emailUtils, "sendEmail").mockResolvedValue();
       const email = "user@example.com";
       const profile = "Profile text here";
 

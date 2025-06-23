@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { PetProfile, DiaryEntry, sendEmail } from "./utils";
+import { sendEmail } from "./email";
+import { PetProfile, DiaryEntry } from "./types";
 import { db } from "./firebase";
 import { ai } from "./genkit.config";
 
