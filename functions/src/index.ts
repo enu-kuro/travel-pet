@@ -244,3 +244,8 @@ export const manualDiaryGeneration = onRequest(
     }
   }
 );
+
+// onRequest動作確認用
+export const helloWorld = onRequest(async (_req, res) => {
+  res.status(200).send("✅ Hello from Gen 2 Cloud Functions!");
+});
