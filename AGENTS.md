@@ -51,6 +51,7 @@ Travel Pet digital companion service that creates virtual pets for users and sen
 - Functions: camelCase with descriptive names
 - Files: camelCase (`.ts` files)
 - Async/await: Always use, no raw Promises
+- **Simplicity First:** Implementations should prioritize simplicity and clarity over premature abstraction or optimization.
 
 ## 🔧 Environment Variables
 Required secrets (Firebase Secret Manager):
