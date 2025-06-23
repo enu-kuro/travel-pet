@@ -15,5 +15,6 @@
     "moduleResolution": "nodenext",
     "noUnusedLocals": true,
     "isolatedModules": true
-  }
+  },
+  "exclude": ["**/*.test.ts"]
 }
