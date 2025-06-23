@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-import { onRequest, onCallGenkit } from "firebase-functions/v2/https"; // Changed onCall to onRequest
+import { onRequest, onCallGenkit, Request, Response } from "firebase-functions/v2/https"; // Added Request, Response
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { simpleParser } from "mailparser";
 import { Readable } from "stream";
@@ -230,44 +230,45 @@ async function _actualHttpCheckNewEmailsAndCreatePetHandler(
   }
 }
 
-// HTTP-callableラッパー関数 with dependency injection
+// Internal function to handle the logic for generateDiariesForAllPetsHttp
+// Exported for mocking.
+export async function _handleGenerateDiariesRequest(
+  req: Request,
+  res: Response
+) {
+  const result = await _actualHttpGenerateDiariesForAllPetsHandler(generateDiariesForAllPets);
+  if (result.success) {
+    res.status(200).send({ message: result.message });
+  } else {
+    res.status(500).send({ message: result.message, error: result.error });
+  }
+}
+
+// Internal function to handle the logic for checkNewEmailsAndCreatePetHttp
+// Exported for mocking.
+export async function _handleCheckEmailsRequest(
+  req: Request,
+  res: Response
+) {
+  const result = await _actualHttpCheckNewEmailsAndCreatePetHandler(checkNewEmailsAndCreatePet);
+  if (result.success) {
+    res.status(200).send({ message: result.message });
+  } else {
+    res.status(500).send({ message: result.message, error: result.error });
+  }
+}
+
+// HTTP-callable functions with clean (req, res) signatures
 export const generateDiariesForAllPetsHttp = onRequest(
   { secrets: [EMAIL_ADDRESS, EMAIL_APP_PASSWORD] },
-  async (
-    req,
-    res,
-    // Optional parameters for testing, defaulting to actual implementations
-    handlerToExecuteParam = _actualHttpGenerateDiariesForAllPetsHandler,
-    coreLogicParam = generateDiariesForAllPets
-  ) => {
-    const result = await handlerToExecuteParam(coreLogicParam);
-    if (result.success) {
-      res.status(200).send({ message: result.message });
-    } else {
-      res.status(500).send({ message: result.message, error: result.error });
-    }
-  }
+  // These now call the exported _handle... functions, which can be mocked.
+  (req, res) => _handleGenerateDiariesRequest(req, res)
 );
 
 export const checkNewEmailsAndCreatePetHttp = onRequest(
   { secrets: [EMAIL_ADDRESS, EMAIL_APP_PASSWORD] },
-  async (
-    req,
-    res,
-    // Optional parameters for testing, defaulting to actual implementations
-    handlerToExecuteParam = _actualHttpCheckNewEmailsAndCreatePetHandler,
-    coreLogicParam = checkNewEmailsAndCreatePet
-  ) => {
-    const result = await handlerToExecuteParam(coreLogicParam);
-    if (result.success) {
-      res.status(200).send({ message: result.message });
-    } else {
-      res.status(500).send({ message: result.message, error: result.error });
-    }
-  }
+  (req, res) => _handleCheckEmailsRequest(req, res)
 );
-
-// The 'testing' export is removed as handlers are now directly exported and mocked.
 
 export const dailyDiaryTrigger = onSchedule(
   {
