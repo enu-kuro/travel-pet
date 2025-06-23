@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-import { onCall, onCallGenkit } from "firebase-functions/v2/https";
+import { onRequest, onCallGenkit } from "firebase-functions/v2/https"; // Changed onCall to onRequest
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { simpleParser } from "mailparser";
 import { Readable } from "stream";
@@ -205,50 +205,69 @@ export const emailCheckTrigger = onSchedule(
   }
 );
 
-// Helper function for generateDiariesForAllPets HTTP logic
-async function generateDiariesForAllPetsHandler(
+// Renamed actual handler implementations
+async function _actualHttpGenerateDiariesForAllPetsHandler(
   generateDiariesFn: () => Promise<void>
-) {
+): Promise<{ success: boolean; message: string; error?: string }> {
   try {
     await generateDiariesFn();
     return { success: true, message: "Diary generation started." };
   } catch (error) {
     console.error("HTTP trigger for diary generation failed:", error);
-    return { success: false, message: "Diary generation failed.", error: (error as Error).message } as { success: boolean; message: string; error?: string };
+    return { success: false, message: "Diary generation failed.", error: (error as Error).message };
   }
 }
 
-// Helper function for checkNewEmailsAndCreatePet HTTP logic
-async function checkNewEmailsAndCreatePetHandler(
+async function _actualHttpCheckNewEmailsAndCreatePetHandler(
   checkEmailsFn: () => Promise<void>
-) {
+): Promise<{ success: boolean; message: string; error?: string }> {
   try {
     await checkEmailsFn();
     return { success: true, message: "Email check and pet creation started." };
   } catch (error) {
     console.error("HTTP trigger for email check failed:", error);
-    return { success: false, message: "Email check failed.", error: (error as Error).message } as { success: boolean; message: string; error?: string };
+    return { success: false, message: "Email check failed.", error: (error as Error).message };
   }
 }
 
-// HTTP-callableラッパー関数
-export const generateDiariesForAllPetsHttp = onCall(
+// HTTP-callableラッパー関数 with dependency injection
+export const generateDiariesForAllPetsHttp = onRequest(
   { secrets: [EMAIL_ADDRESS, EMAIL_APP_PASSWORD] },
-  // In production, pass the actual functions
-  async (_request) => generateDiariesForAllPetsHandler(generateDiariesForAllPets)
+  async (
+    req,
+    res,
+    // Optional parameters for testing, defaulting to actual implementations
+    handlerToExecuteParam = _actualHttpGenerateDiariesForAllPetsHandler,
+    coreLogicParam = generateDiariesForAllPets
+  ) => {
+    const result = await handlerToExecuteParam(coreLogicParam);
+    if (result.success) {
+      res.status(200).send({ message: result.message });
+    } else {
+      res.status(500).send({ message: result.message, error: result.error });
+    }
+  }
 );
 
-export const checkNewEmailsAndCreatePetHttp = onCall(
+export const checkNewEmailsAndCreatePetHttp = onRequest(
   { secrets: [EMAIL_ADDRESS, EMAIL_APP_PASSWORD] },
-  // In production, pass the actual functions
-  async (_request) => checkNewEmailsAndCreatePetHandler(checkNewEmailsAndCreatePet)
+  async (
+    req,
+    res,
+    // Optional parameters for testing, defaulting to actual implementations
+    handlerToExecuteParam = _actualHttpCheckNewEmailsAndCreatePetHandler,
+    coreLogicParam = checkNewEmailsAndCreatePet
+  ) => {
+    const result = await handlerToExecuteParam(coreLogicParam);
+    if (result.success) {
+      res.status(200).send({ message: result.message });
+    } else {
+      res.status(500).send({ message: result.message, error: result.error });
+    }
+  }
 );
 
-// Export handlers for testing purposes
-export const testing = {
-  generateDiariesForAllPetsHandler,
-  checkNewEmailsAndCreatePetHandler,
-};
+// The 'testing' export is removed as handlers are now directly exported and mocked.
 
 export const dailyDiaryTrigger = onSchedule(
   {

@@ -1,16 +1,8 @@
-import { describe, expect, it, vi , beforeEach } from "vitest";
-import * as index from "./index"; // Import all exports from index.ts
-import { FirebaseSecretProvider } from "./config";
+import { describe, expect, it, vi, beforeEach } from "vitest";
+import { Request, Response } from "firebase-functions/v2/https";
 
-import { testing } from "./index"; // Import the testing handlers
-
-// --- Mocks ----
-
-// 0. Mock firebase-admin services
-vi.mock("firebase-admin/app", () => ({
-  initializeApp: vi.fn(),
-}));
-
+// Mock firebase-admin services
+vi.mock("firebase-admin/app", () => ({ initializeApp: vi.fn() }));
 vi.mock("firebase-admin/firestore", () => ({
   getFirestore: vi.fn(() => ({
     collection: vi.fn().mockReturnThis(),
@@ -22,16 +14,9 @@ vi.mock("firebase-admin/firestore", () => ({
   })),
 }));
 
-
-// 1. Mock the core logic functions that will be PASSED to the handlers.
-const mockGenerateDiariesForAllPets = vi.fn();
-const mockCheckNewEmailsAndCreatePet = vi.fn();
-
-// 2. No longer need vi.mock('./index', ...)
-
-// 3. Mock config
+// Mock config
 vi.mock("./config", () => ({
-  FirebaseSecretProvider: vi.fn(() => ({ // This is the constructor mock for FirebaseSecretProvider
+  FirebaseSecretProvider: vi.fn(() => ({
     getEmailAddress: vi.fn().mockResolvedValue("test@example.com"),
     getEmailAppPassword: vi.fn().mockResolvedValue("password"),
     getOpenAIApiKey: vi.fn().mockResolvedValue("openai-key"),
@@ -42,57 +27,124 @@ vi.mock("./config", () => ({
   EMAIL_APP_PASSWORD: "EMAIL_APP_PASSWORD",
 }));
 
-// 4. Mock 'firebase-functions/v2/https' is not needed here as we test handlers directly.
+// Import the actual onRequest functions
+import { generateDiariesForAllPetsHttp, checkNewEmailsAndCreatePetHttp } from "./index";
+
+// Mock firebase-admin services
+vi.mock("firebase-admin/app", () => ({ initializeApp: vi.fn() }));
+vi.mock("firebase-admin/firestore", () => ({
+  getFirestore: vi.fn(() => ({
+    collection: vi.fn().mockReturnThis(),
+    doc: vi.fn().mockReturnThis(),
+    where: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    get: vi.fn().mockResolvedValue({ empty: true, docs: [], size: 0, exists: false, data: () => undefined }),
+    set: vi.fn().mockResolvedValue(undefined),
+  })),
+}));
+
+// Mock config
+vi.mock("./config", () => ({
+  FirebaseSecretProvider: vi.fn(() => ({
+    getEmailAddress: vi.fn().mockResolvedValue("test@example.com"),
+    getEmailAppPassword: vi.fn().mockResolvedValue("password"),
+    getOpenAIApiKey: vi.fn().mockResolvedValue("openai-key"),
+    getGoogleApiKey: vi.fn().mockResolvedValue("google-api-key"),
+    getAliasEmailAddress: vi.fn().mockResolvedValue("alias@example.com"),
+  })),
+  EMAIL_ADDRESS: "EMAIL_ADDRESS",
+  EMAIL_APP_PASSWORD: "EMAIL_APP_PASSWORD",
+}));
+
+// Spies for the handlerToExecuteParam and coreLogicParam
+const spyHttpGenerateDiariesHandler = vi.fn();
+const spyCoreGenerateDiaries = vi.fn();
+const spyHttpCheckEmailsHandler = vi.fn();
+const spyCoreCheckEmails = vi.fn();
 
 
-// --- Test Suite ---
-describe("HTTP Handler Logic", () => {
-  const { generateDiariesForAllPetsHandler, checkNewEmailsAndCreatePetHandler } = testing;
+describe("onRequest HTTP Triggers (Dependency Injection)", () => {
+  let mockReq: Partial<Request>;
+  let mockRes: Partial<Response>;
+  let statusSendSpy: { status: vi.Mock; send: vi.Mock };
 
   beforeEach(() => {
-    mockGenerateDiariesForAllPets.mockReset();
-    mockCheckNewEmailsAndCreatePet.mockReset();
+    spyHttpGenerateDiariesHandler.mockReset();
+    spyCoreGenerateDiaries.mockReset();
+    spyHttpCheckEmailsHandler.mockReset();
+    spyCoreCheckEmails.mockReset();
+
+    statusSendSpy = { status: vi.fn().mockReturnThis(), send: vi.fn().mockReturnThis() };
+    mockReq = {}; // Basic mock
+    mockRes = {
+      status: statusSendSpy.status,
+      send: statusSendSpy.send,
+    } as Partial<Response>;
   });
 
-  describe("generateDiariesForAllPetsHandler", () => {
-    it("should call the provided generateDiariesFn and return success", async () => {
-      mockGenerateDiariesForAllPets.mockResolvedValue(undefined);
+  describe("generateDiariesForAllPetsHttp", () => {
+    it("should call injected handler with injected core logic and return 200 on success", async () => {
+      spyHttpGenerateDiariesHandler.mockResolvedValue({ success: true, message: "Diary generation started." });
 
-      const result = await generateDiariesForAllPetsHandler(mockGenerateDiariesForAllPets);
+      await generateDiariesForAllPetsHttp(
+        mockReq as Request,
+        mockRes as Response,
+        spyHttpGenerateDiariesHandler, // Injected spy handler
+        spyCoreGenerateDiaries         // Injected spy core logic
+      );
 
-      expect(mockGenerateDiariesForAllPets).toHaveBeenCalled();
-      expect(result).toEqual({ success: true, message: "Diary generation started." });
+      expect(spyHttpGenerateDiariesHandler).toHaveBeenCalledWith(spyCoreGenerateDiaries);
+      expect(statusSendSpy.status).toHaveBeenCalledWith(200);
+      expect(statusSendSpy.send).toHaveBeenCalledWith({ message: "Diary generation started." });
     });
 
-    it("should return error if the provided generateDiariesFn throws", async () => {
-      const errorMessage = "Test error from generateDiariesFn";
-      mockGenerateDiariesForAllPets.mockRejectedValue(new Error(errorMessage));
+    it("should return 500 if injected handler indicates failure", async () => {
+      const errorMessage = "Handler error";
+      spyHttpGenerateDiariesHandler.mockResolvedValue({ success: false, message: "Diary generation failed.", error: errorMessage });
 
-      const result = await generateDiariesForAllPetsHandler(mockGenerateDiariesForAllPets);
+      await generateDiariesForAllPetsHttp(
+        mockReq as Request,
+        mockRes as Response,
+        spyHttpGenerateDiariesHandler,
+        spyCoreGenerateDiaries
+      );
 
-      expect(mockGenerateDiariesForAllPets).toHaveBeenCalled();
-      expect(result).toEqual({ success: false, message: "Diary generation failed.", error: errorMessage });
+      expect(spyHttpGenerateDiariesHandler).toHaveBeenCalledWith(spyCoreGenerateDiaries);
+      expect(statusSendSpy.status).toHaveBeenCalledWith(500);
+      expect(statusSendSpy.send).toHaveBeenCalledWith({ message: "Diary generation failed.", error: errorMessage });
     });
   });
 
-  describe("checkNewEmailsAndCreatePetHandler", () => {
-    it("should call the provided checkEmailsFn and return success", async () => {
-      mockCheckNewEmailsAndCreatePet.mockResolvedValue(undefined);
+  describe("checkNewEmailsAndCreatePetHttp", () => {
+    it("should call injected handler with injected core logic and return 200 on success", async () => {
+      spyHttpCheckEmailsHandler.mockResolvedValue({ success: true, message: "Email check and pet creation started." });
 
-      const result = await checkNewEmailsAndCreatePetHandler(mockCheckNewEmailsAndCreatePet);
+      await checkNewEmailsAndCreatePetHttp(
+        mockReq as Request,
+        mockRes as Response,
+        spyHttpCheckEmailsHandler, // Injected spy handler
+        spyCoreCheckEmails         // Injected spy core logic
+      );
 
-      expect(mockCheckNewEmailsAndCreatePet).toHaveBeenCalled();
-      expect(result).toEqual({ success: true, message: "Email check and pet creation started." });
+      expect(spyHttpCheckEmailsHandler).toHaveBeenCalledWith(spyCoreCheckEmails);
+      expect(statusSendSpy.status).toHaveBeenCalledWith(200);
+      expect(statusSendSpy.send).toHaveBeenCalledWith({ message: "Email check and pet creation started." });
     });
 
-    it("should return error if the provided checkEmailsFn throws", async () => {
-      const errorMessage = "Test error from checkEmailsFn";
-      mockCheckNewEmailsAndCreatePet.mockRejectedValue(new Error(errorMessage));
+    it("should return 500 if injected handler indicates failure", async () => {
+      const errorMessage = "Handler error";
+      spyHttpCheckEmailsHandler.mockResolvedValue({ success: false, message: "Email check failed.", error: errorMessage });
 
-      const result = await checkNewEmailsAndCreatePetHandler(mockCheckNewEmailsAndCreatePet);
+      await checkNewEmailsAndCreatePetHttp(
+        mockReq as Request,
+        mockRes as Response,
+        spyHttpCheckEmailsHandler,
+        spyCoreCheckEmails
+      );
 
-      expect(mockCheckNewEmailsAndCreatePet).toHaveBeenCalled();
-      expect(result).toEqual({ success: false, message: "Email check failed.", error: errorMessage });
+      expect(spyHttpCheckEmailsHandler).toHaveBeenCalledWith(spyCoreCheckEmails);
+      expect(statusSendSpy.status).toHaveBeenCalledWith(500);
+      expect(statusSendSpy.send).toHaveBeenCalledWith({ message: "Email check failed.", error: errorMessage });
     });
   });
 });
