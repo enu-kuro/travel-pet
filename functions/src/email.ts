@@ -53,11 +53,32 @@ export async function getImapClient(
   const user = await secretProvider.getEmailAddress();
   const password = await secretProvider.getEmailAppPassword();
 
-  return new Imap({
+  const isLocalDev = process.env.FUNCTIONS_EMULATOR === "true";
+
+  const baseConfig = {
     user,
     password,
     host: "imap.gmail.com",
     port: 993,
     tls: true,
-  });
+  };
+
+  if (isLocalDev) {
+    // Local環境: 証明書検証を緩和
+    return new Imap({
+      ...baseConfig,
+      tlsOptions: {
+        rejectUnauthorized: false,
+        servername: "imap.gmail.com",
+      },
+    });
+  } else {
+    // Production環境: 厳格な証明書検証
+    return new Imap({
+      ...baseConfig,
+      tlsOptions: {
+        servername: "imap.gmail.com",
+      },
+    });
+  }
 }
