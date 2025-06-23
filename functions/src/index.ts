@@ -1,5 +1,5 @@
 import { db } from "./firebase";
-import { onCallGenkit } from "firebase-functions/v2/https";
+import { onCallGenkit, onRequest } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { simpleParser } from "mailparser";
 import { Readable } from "stream";
@@ -215,6 +215,32 @@ export const dailyDiaryTrigger = onSchedule(
     } catch (error) {
       console.error("Diary generation failed:", error);
       throw error;
+    }
+  }
+);
+
+export const manualEmailCheck = onRequest(
+  { secrets: [EMAIL_ADDRESS, EMAIL_APP_PASSWORD] },
+  async (_req, res) => {
+    try {
+      await checkNewEmailsAndCreatePet();
+      res.status(200).send("Email check completed");
+    } catch (error) {
+      console.error("Email check failed:", error);
+      res.status(500).send("Email check failed");
+    }
+  }
+);
+
+export const manualDiaryGeneration = onRequest(
+  { secrets: [EMAIL_ADDRESS, EMAIL_APP_PASSWORD] },
+  async (_req, res) => {
+    try {
+      await generateDiariesForAllPets();
+      res.status(200).send("Diary generation completed");
+    } catch (error) {
+      console.error("Diary generation failed:", error);
+      res.status(500).send("Diary generation failed");
     }
   }
 );
