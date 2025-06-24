@@ -171,6 +171,9 @@ describe("utils", () => {
         host: "imap.gmail.com",
         port: 993,
         tls: true,
+        tlsOptions: {
+          servername: "imap.gmail.com",
+        },
       });
 
       expect(result).toBe(mockImapInstance);

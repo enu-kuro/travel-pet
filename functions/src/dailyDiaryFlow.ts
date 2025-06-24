@@ -4,15 +4,14 @@ import { PetProfile, DiaryEntry } from "./types";
 import { db } from "./firebase";
 import { ai } from "./genkit.config";
 
-// Zod schemas for input/output validation
-const DailyDiaryInputSchema = z.object({
-  profile: z.string(), // Firestoreから読み取った profile を直接受け取る
+// Schemas for the new destination generation flow
+const GenerateDestinationInputSchema = z.object({
+  profile: z.string(),
 });
 
-const DailyDiaryOutputSchema = z.object({
+const GenerateDestinationOutputSchema = z.object({
   success: z.boolean(),
   itinerary: z.string().optional(),
-  diary: z.string().optional(),
 });
 
 const generateDestinationPrompt = ai.prompt<
@@ -25,32 +24,66 @@ const generateDiaryPrompt = ai.prompt<
   z.ZodObject<{ diary: z.ZodString }>
 >("generate-diary");
 
-// Flow #2: Daily Diary Generation Flow (AI処理のみ)
-export const dailyDiaryFlow = ai.defineFlow(
+// New Flow: Destination Generation
+export const generateDestinationFlow = ai.defineFlow(
   {
-    name: "dailyDiaryFlow",
-    inputSchema: DailyDiaryInputSchema,
-    outputSchema: DailyDiaryOutputSchema,
+    name: "generateDestinationFlow",
+    inputSchema: GenerateDestinationInputSchema,
+    outputSchema: GenerateDestinationOutputSchema,
   },
   async (input) => {
     console.log(
-      `Generating diary for profile: ${input.profile.substring(0, 50)}...`
+      `Generating destination for profile: ${input.profile.substring(0, 50)}...`
     );
 
-    // AI処理のみ: 旅行先生成
     const { output: destOutput } = await generateDestinationPrompt({
       profile: input.profile,
     });
+
     if (!destOutput || !destOutput.destination) {
       console.error("Failed to generate destination");
       return { success: false };
     }
     const itinerary = destOutput.destination;
+    console.log(`Destination generated: ${itinerary}`);
+
+    return {
+      success: true,
+      itinerary: itinerary,
+    };
+  }
+);
+
+// Renamed Zod schemas for input/output validation for the diary generation flow
+const GenerateDiaryInputSchema = z.object({
+  profile: z.string(),
+  itinerary: z.string(), // Itinerary is now an input
+});
+
+const GenerateDiaryOutputSchema = z.object({
+  success: z.boolean(),
+  diary: z.string().optional(), // Itinerary is no longer output here
+});
+
+// Modified Flow: Diary Generation (receives destination as input)
+export const generateDiaryFromDestinationFlow = ai.defineFlow(
+  {
+    name: "generateDiaryFromDestinationFlow",
+    inputSchema: GenerateDiaryInputSchema,
+    outputSchema: GenerateDiaryOutputSchema,
+  },
+  async (input) => {
+    console.log(
+      `Generating diary for profile: ${input.profile.substring(
+        0,
+        50
+      )}... with itinerary: ${input.itinerary}`
+    );
 
     // AI処理のみ: 日記生成
     const { output: diaryOutput } = await generateDiaryPrompt({
       profile: input.profile,
-      destination: itinerary,
+      destination: input.itinerary, // Use input.itinerary
     });
     if (!diaryOutput || !diaryOutput.diary) {
       console.error("Failed to generate diary");
@@ -58,12 +91,11 @@ export const dailyDiaryFlow = ai.defineFlow(
     }
     const diary = diaryOutput.diary;
 
-    console.log(`Diary generated: ${itinerary}`);
+    console.log(`Diary generated for itinerary: ${input.itinerary}`);
 
     return {
       success: true,
-      itinerary: itinerary,
-      diary: diary,
+      diary: diary, // Only diary is returned
     };
   }
 );

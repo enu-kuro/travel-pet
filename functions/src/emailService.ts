@@ -7,7 +7,8 @@ import {
   sendPetCreationEmail,
 } from "./createPetFlow";
 import {
-  dailyDiaryFlow,
+  generateDestinationFlow,
+  generateDiaryFromDestinationFlow,
   getPetFromFirestore,
   saveDiaryToFirestore,
   sendDiaryEmail,
@@ -147,14 +148,41 @@ export async function generateDiariesForAllPets(): Promise<void> {
         return;
       }
 
-      const result = await dailyDiaryFlow({ profile: petData.profile });
+      // Step 1: Generate Destination
+      const destinationResult = await generateDestinationFlow({
+        profile: petData.profile,
+      });
 
-      if (result.success && result.itinerary && result.diary) {
-        await saveDiaryToFirestore(petId, result.itinerary, result.diary);
-        await sendDiaryEmail(petData.email, result.itinerary, result.diary);
+      if (
+        !destinationResult.success ||
+        !destinationResult.itinerary
+      ) {
+        console.error(
+          `Failed to generate destination for pet ${petId}. Error: ${destinationResult.itinerary}`
+        );
+        return;
       }
+      const itinerary = destinationResult.itinerary;
 
-      console.log(`Diary generated for pet: ${petId}`);
+      // Step 2: Generate Diary using the destination
+      const diaryResult = await generateDiaryFromDestinationFlow({
+        profile: petData.profile,
+        itinerary: itinerary,
+      });
+
+      if (!diaryResult.success || !diaryResult.diary) {
+        console.error(
+          `Failed to generate diary for pet ${petId} with itinerary ${itinerary}. Error: ${diaryResult.diary}`
+        );
+        return;
+      }
+      const diary = diaryResult.diary;
+
+      // Save and send email
+      await saveDiaryToFirestore(petId, itinerary, diary);
+      await sendDiaryEmail(petData.email, itinerary, diary);
+
+      console.log(`Diary generated for pet: ${petId} for itinerary: ${itinerary}`);
     } catch (error) {
       console.error(`Failed to generate diary for pet ${petId}:`, error);
     }

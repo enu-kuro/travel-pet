@@ -4,7 +4,8 @@ import { onSchedule } from "firebase-functions/v2/scheduler";
 
 import { createPetFlow } from "./createPetFlow";
 import {
-  dailyDiaryFlow,
+  generateDestinationFlow,
+  generateDiaryFromDestinationFlow,
 } from "./dailyDiaryFlow";
 import {
   checkNewEmailsAndCreatePet,
@@ -15,7 +16,8 @@ import { EMAIL_ADDRESS, EMAIL_APP_PASSWORD } from "./config";
 export { db } from "./firebase";
 
 export const createPet = onCallGenkit(createPetFlow);
-export const generateDiary = onCallGenkit(dailyDiaryFlow);
+export const generateDestination = onCallGenkit(generateDestinationFlow);
+export const generateDiary = onCallGenkit(generateDiaryFromDestinationFlow);
 
 export const emailCheckTrigger = onSchedule(
   {
