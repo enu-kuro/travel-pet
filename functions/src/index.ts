@@ -8,6 +8,8 @@ import {
 } from "./dailyDiaryFlow";
 import {
   checkNewEmailsAndCreatePet,
+  generateDestinationsForAllPets,
+  generateDiaryEntriesForAllPets,
   generateDiariesForAllPets,
 } from "./emailService";
 import { EMAIL_ADDRESS, EMAIL_APP_PASSWORD } from "./config";
@@ -33,7 +35,7 @@ export const emailCheckTrigger = onSchedule(
   }
 );
 
-export const dailyDiaryTrigger = onSchedule(
+export const dailyDestinationTrigger = onSchedule(
   {
     schedule: "0 9 * * *",
     timeZone: "Asia/Tokyo",
@@ -41,7 +43,23 @@ export const dailyDiaryTrigger = onSchedule(
   },
   async () => {
     try {
-      await generateDiariesForAllPets();
+      await generateDestinationsForAllPets();
+    } catch (error) {
+      console.error("Destination generation failed:", error);
+      throw error;
+    }
+  }
+);
+
+export const dailyDiaryTrigger = onSchedule(
+  {
+    schedule: "5 9 * * *",
+    timeZone: "Asia/Tokyo",
+    secrets: [EMAIL_ADDRESS, EMAIL_APP_PASSWORD],
+  },
+  async () => {
+    try {
+      await generateDiaryEntriesForAllPets();
     } catch (error) {
       console.error("Diary generation failed:", error);
       throw error;

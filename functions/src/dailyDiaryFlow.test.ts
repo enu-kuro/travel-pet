@@ -3,6 +3,8 @@ import * as index from "./index";
 import * as emailUtils from "./email";
 import {
   getPetFromFirestore,
+  saveDestinationToFirestore,
+  getDestinationFromFirestore,
   saveDiaryToFirestore,
   sendDiaryEmail,
 } from "./dailyDiaryFlow";
@@ -87,6 +89,41 @@ describe("dailyDiaryFlow helpers", () => {
       expect(diariesCollectionMock).toHaveBeenCalledWith("diaries");
       expect(diaryDocMock).toHaveBeenCalledWith(today);
       expect(setMock).toHaveBeenCalledWith({ itinerary, diary, date: today });
+    });
+  });
+
+  describe("saveDestinationToFirestore and getDestinationFromFirestore", () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it("saves and retrieves itinerary for today", async () => {
+      const itinerary = "Osaka";
+      const petId = "petXYZ";
+      const today = new Date().toISOString().split("T")[0];
+
+      const getMock = vi.fn().mockResolvedValue({ exists: true, data: () => ({ itinerary }) });
+      const setMock = vi.fn().mockResolvedValue(undefined);
+
+      const diaryDocMock = vi.fn().mockReturnValue({ set: setMock, get: getMock });
+      const diariesCollectionMock = vi.fn().mockReturnValue({ doc: diaryDocMock });
+      const petDocRefMock = vi.fn().mockReturnValue({ collection: diariesCollectionMock });
+      const collectionMock = vi.fn().mockReturnValue({ doc: petDocRefMock });
+
+      vi.spyOn(index.db, "collection").mockImplementation(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        collectionMock as any
+      );
+
+      await saveDestinationToFirestore(petId, itinerary);
+      const result = await getDestinationFromFirestore(petId);
+
+      expect(collectionMock).toHaveBeenCalledWith("pets");
+      expect(petDocRefMock).toHaveBeenCalledWith(petId);
+      expect(diariesCollectionMock).toHaveBeenCalledWith("diaries");
+      expect(diaryDocMock).toHaveBeenCalledWith(today);
+      expect(setMock).toHaveBeenCalledWith({ itinerary, date: today });
+      expect(result).toBe(itinerary);
     });
   });
 

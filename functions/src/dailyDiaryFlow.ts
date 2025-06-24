@@ -5,8 +5,27 @@ import { db } from "./firebase";
 import { ai } from "./genkit.config";
 
 // Zod schemas for input/output validation
+const DestinationInputSchema = z.object({
+  profile: z.string(),
+});
+
+const DestinationOutputSchema = z.object({
+  success: z.boolean(),
+  itinerary: z.string().optional(),
+});
+
+const DiaryInputSchema = z.object({
+  profile: z.string(),
+  destination: z.string(),
+});
+
+const DiaryOutputSchema = z.object({
+  success: z.boolean(),
+  diary: z.string().optional(),
+});
+
 const DailyDiaryInputSchema = z.object({
-  profile: z.string(), // Firestoreから読み取った profile を直接受け取る
+  profile: z.string(),
 });
 
 const DailyDiaryOutputSchema = z.object({
@@ -25,6 +44,41 @@ const generateDiaryPrompt = ai.prompt<
   z.ZodObject<{ diary: z.ZodString }>
 >("generate-diary");
 
+export const generateDestinationFlow = ai.defineFlow(
+  {
+    name: "generateDestinationFlow",
+    inputSchema: DestinationInputSchema,
+    outputSchema: DestinationOutputSchema,
+  },
+  async (input) => {
+    const { output } = await generateDestinationPrompt({ profile: input.profile });
+    if (!output || !output.destination) {
+      console.error("Failed to generate destination");
+      return { success: false };
+    }
+    return { success: true, itinerary: output.destination };
+  }
+);
+
+export const generateDiaryFlow = ai.defineFlow(
+  {
+    name: "generateDiaryFlow",
+    inputSchema: DiaryInputSchema,
+    outputSchema: DiaryOutputSchema,
+  },
+  async (input) => {
+    const { output } = await generateDiaryPrompt({
+      profile: input.profile,
+      destination: input.destination,
+    });
+    if (!output || !output.diary) {
+      console.error("Failed to generate diary");
+      return { success: false };
+    }
+    return { success: true, diary: output.diary };
+  }
+);
+
 // Flow #2: Daily Diary Generation Flow (AI処理のみ)
 export const dailyDiaryFlow = ai.defineFlow(
   {
@@ -37,26 +91,21 @@ export const dailyDiaryFlow = ai.defineFlow(
       `Generating diary for profile: ${input.profile.substring(0, 50)}...`
     );
 
-    // AI処理のみ: 旅行先生成
-    const { output: destOutput } = await generateDestinationPrompt({
-      profile: input.profile,
-    });
-    if (!destOutput || !destOutput.destination) {
-      console.error("Failed to generate destination");
+    const dest = await generateDestinationFlow({ profile: input.profile });
+    if (!dest.success || !dest.itinerary) {
       return { success: false };
     }
-    const itinerary = destOutput.destination;
 
-    // AI処理のみ: 日記生成
-    const { output: diaryOutput } = await generateDiaryPrompt({
+    const diaryRes = await generateDiaryFlow({
       profile: input.profile,
-      destination: itinerary,
+      destination: dest.itinerary,
     });
-    if (!diaryOutput || !diaryOutput.diary) {
-      console.error("Failed to generate diary");
+    if (!diaryRes.success || !diaryRes.diary) {
       return { success: false };
     }
-    const diary = diaryOutput.diary;
+
+    const itinerary = dest.itinerary;
+    const diary = diaryRes.diary;
 
     console.log(`Diary generated: ${itinerary}`);
 
@@ -84,6 +133,41 @@ export async function getPetFromFirestore(
     email: petData.email,
     profile: petData.profile,
   };
+}
+
+export async function saveDestinationToFirestore(
+  petId: string,
+  itinerary: string
+): Promise<void> {
+  const today = new Date().toISOString().split("T")[0];
+
+  await db
+    .collection("pets")
+    .doc(petId)
+    .collection("diaries")
+    .doc(today)
+    .set({ itinerary, date: today });
+
+  console.log(`Destination saved to Firestore for pet: ${petId}`);
+}
+
+export async function getDestinationFromFirestore(
+  petId: string
+): Promise<string | null> {
+  const today = new Date().toISOString().split("T")[0];
+  const diaryDoc = await db
+    .collection("pets")
+    .doc(petId)
+    .collection("diaries")
+    .doc(today)
+    .get();
+
+  if (!diaryDoc.exists) {
+    return null;
+  }
+
+  const data = diaryDoc.data() as Partial<DiaryEntry>;
+  return data.itinerary ?? null;
 }
 
 // 分離されたFirestore保存関数
