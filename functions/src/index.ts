@@ -3,21 +3,17 @@ import { onSchedule } from "firebase-functions/v2/scheduler";
 
 
 import { createPetFlow } from "./createPetFlow";
+import { checkNewEmailsAndCreatePet } from "./emailService";
 import {
-  dailyDiaryFlow,
-} from "./dailyDiaryFlow";
-import {
-  checkNewEmailsAndCreatePet,
   generateDestinationsForAllPets,
   generateDiaryEntriesForAllPets,
   generateDiariesForAllPets,
-} from "./emailService";
+} from "./diaryService";
 import { EMAIL_ADDRESS, EMAIL_APP_PASSWORD } from "./config";
 
 export { db } from "./firebase";
 
 export const createPet = onCallGenkit(createPetFlow);
-export const generateDiary = onCallGenkit(dailyDiaryFlow);
 
 export const emailCheckTrigger = onSchedule(
   {
@@ -76,6 +72,32 @@ export const manualEmailCheck = onRequest(
     } catch (error) {
       console.error("Email check failed:", error);
       res.status(500).send("Email check failed");
+    }
+  }
+);
+
+export const manualDestinationGeneration = onRequest(
+  { secrets: [EMAIL_ADDRESS, EMAIL_APP_PASSWORD] },
+  async (_req, res) => {
+    try {
+      await generateDestinationsForAllPets();
+      res.status(200).send("Destination generation completed");
+    } catch (error) {
+      console.error("Destination generation failed:", error);
+      res.status(500).send("Destination generation failed");
+    }
+  }
+);
+
+export const manualDiaryEntryGeneration = onRequest(
+  { secrets: [EMAIL_ADDRESS, EMAIL_APP_PASSWORD] },
+  async (_req, res) => {
+    try {
+      await generateDiaryEntriesForAllPets();
+      res.status(200).send("Diary entry generation completed");
+    } catch (error) {
+      console.error("Diary entry generation failed:", error);
+      res.status(500).send("Diary entry generation failed");
     }
   }
 );

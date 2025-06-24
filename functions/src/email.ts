@@ -69,6 +69,7 @@ export async function getImapClient(
       ...baseConfig,
       tlsOptions: {
         rejectUnauthorized: false,
+        // servernameを明示することでTLSハンドシェイクの失敗を防ぐ
         servername: "imap.gmail.com",
       },
     });
@@ -77,6 +78,7 @@ export async function getImapClient(
     return new Imap({
       ...baseConfig,
       tlsOptions: {
+        // GmailのIMAPサーバー名を指定
         servername: "imap.gmail.com",
       },
     });

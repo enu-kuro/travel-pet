@@ -24,15 +24,6 @@ const DiaryOutputSchema = z.object({
   diary: z.string().optional(),
 });
 
-const DailyDiaryInputSchema = z.object({
-  profile: z.string(),
-});
-
-const DailyDiaryOutputSchema = z.object({
-  success: z.boolean(),
-  itinerary: z.string().optional(),
-  diary: z.string().optional(),
-});
 
 const generateDestinationPrompt = ai.prompt<
   z.ZodObject<{ profile: z.ZodString }>,
@@ -79,43 +70,6 @@ export const generateDiaryFlow = ai.defineFlow(
   }
 );
 
-// Flow #2: Daily Diary Generation Flow (AI処理のみ)
-export const dailyDiaryFlow = ai.defineFlow(
-  {
-    name: "dailyDiaryFlow",
-    inputSchema: DailyDiaryInputSchema,
-    outputSchema: DailyDiaryOutputSchema,
-  },
-  async (input) => {
-    console.log(
-      `Generating diary for profile: ${input.profile.substring(0, 50)}...`
-    );
-
-    const dest = await generateDestinationFlow({ profile: input.profile });
-    if (!dest.success || !dest.itinerary) {
-      return { success: false };
-    }
-
-    const diaryRes = await generateDiaryFlow({
-      profile: input.profile,
-      destination: dest.itinerary,
-    });
-    if (!diaryRes.success || !diaryRes.diary) {
-      return { success: false };
-    }
-
-    const itinerary = dest.itinerary;
-    const diary = diaryRes.diary;
-
-    console.log(`Diary generated: ${itinerary}`);
-
-    return {
-      success: true,
-      itinerary: itinerary,
-      diary: diary,
-    };
-  }
-);
 
 // 分離されたFirestore読み取り関数
 export async function getPetFromFirestore(
