@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { sendEmail } from "./email";
 import { PetProfile, DiaryEntry } from "./types";
 import { db } from "./firebase";
@@ -9,29 +8,7 @@ import {
   GenerateDestinationInputSchema,
   GenerateDiaryInputSchema,
   DiarySchema,
-  PersonaSchema,
 } from "./genkit.config";
-
-// Zod schemas for input/output validation
-const DestinationInputSchema = z.object({
-  profile: z.string(),
-});
-
-const DestinationOutputSchema = z.object({
-  success: z.boolean(),
-  itinerary: z.string().optional(),
-});
-
-const DiaryInputSchema = z.object({
-  profile: z.string(),
-  destination: z.string(),
-});
-
-const DiaryOutputSchema = z.object({
-  success: z.boolean(),
-  diary: z.string().optional(),
-});
-
 
 const generateDestinationPrompt = ai.prompt<
   typeof GenerateDestinationInputSchema,
@@ -46,62 +23,30 @@ const generateDiaryPrompt = ai.prompt<
 export const generateDestinationFlow = ai.defineFlow(
   {
     name: "generateDestinationFlow",
-    inputSchema: DestinationInputSchema,
-    outputSchema: DestinationOutputSchema,
+    inputSchema: GenerateDestinationInputSchema,
+    outputSchema: DestinationSchema,
   },
   async (input) => {
-    let personaDna: unknown;
-    try {
-      personaDna = JSON.parse(input.profile).persona_dna;
-    } catch (e) {
-      console.error("Invalid profile JSON", e);
-      return { success: false };
-    }
-
-    const { output } = await generateDestinationPrompt({
-      persona_dna: personaDna as z.infer<typeof PersonaSchema>,
-      date: new Date().toISOString().split("T")[0],
-    });
+    const { output } = await generateDestinationPrompt(input);
     if (!output) {
-      console.error("Failed to generate destination");
-      return { success: false };
+      throw new Error("Failed to generate destination");
     }
-    return { success: true, itinerary: JSON.stringify(output) };
+    return output;
   }
 );
 
 export const generateDiaryFlow = ai.defineFlow(
   {
     name: "generateDiaryFlow",
-    inputSchema: DiaryInputSchema,
-    outputSchema: DiaryOutputSchema,
+    inputSchema: GenerateDiaryInputSchema,
+    outputSchema: DiarySchema,
   },
   async (input) => {
-    let personaDna: unknown;
-    try {
-      personaDna = JSON.parse(input.profile).persona_dna;
-    } catch (e) {
-      console.error("Invalid profile JSON", e);
-      return { success: false };
+    const { output } = await generateDiaryPrompt(input);
+    if (!output) {
+      throw new Error("Failed to generate diary");
     }
-
-    let travelMaterial: unknown;
-    try {
-      travelMaterial = JSON.parse(input.destination);
-    } catch (e) {
-      console.error("Invalid destination JSON", e);
-      return { success: false };
-    }
-
-    const { output } = await generateDiaryPrompt({
-      persona_dna: personaDna as z.infer<typeof PersonaSchema>,
-      travel_material: travelMaterial as z.infer<typeof DestinationSchema>,
-    });
-    if (!output || !output.diary) {
-      console.error("Failed to generate diary");
-      return { success: false };
-    }
-    return { success: true, diary: output.diary };
+    return output;
   }
 );
 
