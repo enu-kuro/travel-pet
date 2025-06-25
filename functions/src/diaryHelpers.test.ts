@@ -7,9 +7,9 @@ import {
   getDestinationFromFirestore,
   saveDiaryToFirestore,
   sendDiaryEmail,
-} from "./dailyDiaryFlow";
+} from "./diaryHelpers";
 
-describe("dailyDiaryFlow helpers", () => {
+describe("diary helpers", () => {
   describe("getPetFromFirestore", () => {
     beforeEach(() => {
       vi.clearAllMocks();
