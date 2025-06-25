@@ -50,7 +50,7 @@ output:
 - **local_details**：五感や情景描写、豆知識、現地の人や動物の様子など、旅日記として物語を膨らませやすい素材を3文以上で。
 
 # 入力
-persona_dna: {{ persona_dna }}
+persona_dna: {{json persona_dna}}
 date: {{ date }}
 
 # 出力形式（Strict JSON）

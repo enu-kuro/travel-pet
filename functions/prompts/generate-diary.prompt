@@ -42,8 +42,8 @@ output:
 - 与えられた素材に忠実でありつつ、想像や膨らみを加えても構いません。
 
 # 入力
-persona_dna: {{ persona_dna }}
-travel_material: {{ travel_material }}
+persona_dna: {{json persona_dna}}
+travel_material: {{json travel_material}}
 
 # 出力形式（Strict JSON）
 {
