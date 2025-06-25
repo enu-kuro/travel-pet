@@ -75,6 +75,16 @@ export const dailyPetCleanup = onSchedule(
   }
 );
 
+export const manualPetCleanup = onRequest(async (_req, res) => {
+  try {
+    await deleteExpiredPets();
+    res.status(200).send("Pet cleanup completed");
+  } catch (error) {
+    console.error("Pet cleanup failed:", error);
+    res.status(500).send("Pet cleanup failed");
+  }
+});
+
 export const manualEmailCheck = onRequest(
   { secrets: [EMAIL_ADDRESS, EMAIL_APP_PASSWORD] },
   async (_req, res) => {
