@@ -1,8 +1,6 @@
-import { onCallGenkit, onRequest } from "firebase-functions/v2/https";
+import { onRequest } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 
-
-import { createPetFlow } from "./createPetFlow";
 import { checkNewEmailsAndCreatePet } from "./emailService";
 import {
   generateDestinationsForAllPets,
@@ -12,8 +10,6 @@ import {
 import { EMAIL_ADDRESS, EMAIL_APP_PASSWORD } from "./config";
 
 export { db } from "./firebase";
-
-export const createPet = onCallGenkit(createPetFlow);
 
 export const emailCheckTrigger = onSchedule(
   {
