@@ -1,13 +1,13 @@
 import { db } from "./firebase";
+import { generateDestinationFlow } from "./generateDestinationFlow";
+import { generateDiaryFlow } from "./generateDiaryFlow";
 import {
-  generateDestinationFlow,
-  generateDiaryFlow,
   getPetFromFirestore,
   saveDestinationToFirestore,
   getDestinationFromFirestore,
   saveDiaryToFirestore,
   sendDiaryEmail,
-} from "./dailyDiaryFlow";
+} from "./diaryHelpers";
 
 export async function generateDestinationsForAllPets(): Promise<void> {
   const petsSnapshot = await db.collection("pets").get();
