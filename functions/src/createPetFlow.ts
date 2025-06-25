@@ -3,7 +3,7 @@ import { z } from "zod";
 import { sendEmail } from "./email";
 import { PetProfile } from "./types";
 import { db } from "./firebase";
-import { ai } from "./genkit.config";
+import { ai, EmptySchema, PetProfileSchema } from "./genkit.config";
 
 // Zod schemas for input/output validation
 const CreatePetInputSchema = z.object({
@@ -24,26 +24,11 @@ export const createPetFlow = ai.defineFlow(
   async (input) => {
     console.log(`Generating pet profile for email: ${input.email}`);
 
-    /* eslint-disable @typescript-eslint/no-unused-vars */
-    const inputSchema = z.object({});
-    const outputSchema = z.object({
-      name: z.string(),
-      persona_dna: z.object({
-        personality: z.string(),
-        guiding_theme: z.string(),
-        emotional_trigger: z.string(),
-        mobility_range: z.string(),
-        interest_depth: z.string(),
-        temporal_focus: z.string(),
-      }),
-      introduction: z.string(),
-    });
-    /* eslint-enable @typescript-eslint/no-unused-vars */
-
     // AI処理のみ: Generate pet profile
-    const petProfilePrompt = ai.prompt<typeof inputSchema, typeof outputSchema>(
-      "create-pet-profile"
-    );
+    const petProfilePrompt = ai.prompt<
+      typeof EmptySchema,
+      typeof PetProfileSchema
+    >("create-pet-profile");
     const { output } = await petProfilePrompt({});
     if (!output) {
       throw new Error("Failed to generate pet profile");

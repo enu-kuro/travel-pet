@@ -3,19 +3,10 @@ model: vertexai/gemini-2.0-flash-lite
 config:
   temperature: 1.0
 input:
-  schema: {}
+  schema: EmptySchema
 output:
   format: json
-  schema:
-    name: string
-    persona_dna:
-      personality: string
-      guiding_theme: string
-      emotional_trigger: string
-      mobility_range: string
-      interest_depth: string
-      temporal_focus: string
-    introduction: string
+  schema: PetProfileSchema
 ---
 # 前提：サービスの概要と目的
 

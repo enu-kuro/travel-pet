@@ -3,7 +3,14 @@ import { sendEmail } from "./email";
 import { PetProfile, DiaryEntry } from "./types";
 import { db } from "./firebase";
 import { FieldValue } from "firebase-admin/firestore";
-import { ai } from "./genkit.config";
+import {
+  ai,
+  DestinationSchema,
+  GenerateDestinationInputSchema,
+  GenerateDiaryInputSchema,
+  DiarySchema,
+  PersonaSchema,
+} from "./genkit.config";
 
 // Zod schemas for input/output validation
 const DestinationInputSchema = z.object({
@@ -27,18 +34,13 @@ const DiaryOutputSchema = z.object({
 
 
 const generateDestinationPrompt = ai.prompt<
-  z.ZodObject<{ persona_dna: z.ZodString; date: z.ZodString }>,
-  z.ZodObject<{
-    selected_location: z.ZodString;
-    summary: z.ZodString;
-    news_context: z.ZodString;
-    local_details: z.ZodString;
-  }>
+  typeof GenerateDestinationInputSchema,
+  typeof DestinationSchema
 >("generate-destination");
 
 const generateDiaryPrompt = ai.prompt<
-  z.ZodObject<{ persona_dna: z.ZodString; travel_material: z.ZodString }>,
-  z.ZodObject<{ diary: z.ZodString }>
+  typeof GenerateDiaryInputSchema,
+  typeof DiarySchema
 >("generate-diary");
 
 export const generateDestinationFlow = ai.defineFlow(
@@ -57,7 +59,7 @@ export const generateDestinationFlow = ai.defineFlow(
     }
 
     const { output } = await generateDestinationPrompt({
-      persona_dna: JSON.stringify(personaDna),
+      persona_dna: personaDna as z.infer<typeof PersonaSchema>,
       date: new Date().toISOString().split("T")[0],
     });
     if (!output) {
@@ -83,9 +85,17 @@ export const generateDiaryFlow = ai.defineFlow(
       return { success: false };
     }
 
+    let travelMaterial: unknown;
+    try {
+      travelMaterial = JSON.parse(input.destination);
+    } catch (e) {
+      console.error("Invalid destination JSON", e);
+      return { success: false };
+    }
+
     const { output } = await generateDiaryPrompt({
-      persona_dna: JSON.stringify(personaDna),
-      travel_material: input.destination,
+      persona_dna: personaDna as z.infer<typeof PersonaSchema>,
+      travel_material: travelMaterial as z.infer<typeof DestinationSchema>,
     });
     if (!output || !output.diary) {
       console.error("Failed to generate diary");

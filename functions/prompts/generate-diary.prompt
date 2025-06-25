@@ -3,13 +3,10 @@ model: vertexai/gemini-2.0-flash-lite
 config:
   temperature: 1.0
 input:
-  schema:
-    persona_dna: string
-    travel_material: string
+  schema: GenerateDiaryInput
 output:
   format: json
-  schema:
-    diary: string
+  schema: DiarySchema
 ---
 あなたは「旅するデジタルペット」の旅日記生成AIです。
 

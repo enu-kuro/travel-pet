@@ -3,16 +3,10 @@ model: vertexai/gemini-2.0-flash-lite
 config:
   temperature: 2.0
 input:
-  schema:
-    persona_dna: string
-    date: string
+  schema: GenerateDestinationInput
 output:
   format: json
-  schema:
-    selected_location: string
-    summary: string
-    news_context: string
-    local_details: string
+  schema: DestinationSchema
 ---
 あなたは「旅するデジタルペット」の旅先選定AIです。
 
