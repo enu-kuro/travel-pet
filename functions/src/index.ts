@@ -7,6 +7,7 @@ import {
   generateDiaryEntriesForAllPets,
   generateDiariesForAllPets,
 } from "./diaryService";
+import { deleteExpiredPets } from "./petService";
 import { EMAIL_ADDRESS, EMAIL_APP_PASSWORD } from "./config";
 
 export { db } from "./firebase";
@@ -54,6 +55,21 @@ export const dailyDiaryTrigger = onSchedule(
       await generateDiaryEntriesForAllPets();
     } catch (error) {
       console.error("Diary generation failed:", error);
+      throw error;
+    }
+  }
+);
+
+export const dailyPetCleanup = onSchedule(
+  {
+    schedule: "30 3 * * *",
+    timeZone: "Asia/Tokyo",
+  },
+  async () => {
+    try {
+      await deleteExpiredPets();
+    } catch (error) {
+      console.error("Pet cleanup failed:", error);
       throw error;
     }
   }
