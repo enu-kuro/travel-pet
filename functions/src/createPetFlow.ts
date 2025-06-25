@@ -3,7 +3,7 @@ import { z } from "zod";
 import { sendEmail } from "./email";
 import { PetProfile } from "./types";
 import { db } from "./firebase";
-import { ai } from "./genkit.config";
+import { ai, EmptySchema, PetProfileSchema, PetProfileData } from "./genkit.config";
 
 // Zod schemas for input/output validation
 const CreatePetInputSchema = z.object({
@@ -11,7 +11,7 @@ const CreatePetInputSchema = z.object({
 });
 
 const CreatePetOutputSchema = z.object({
-  profile: z.string(),
+  profile: PetProfileSchema,
 });
 
 // Flow #1: Pet Creation Flow (AI処理のみ)
@@ -24,24 +24,20 @@ export const createPetFlow = ai.defineFlow(
   async (input) => {
     console.log(`Generating pet profile for email: ${input.email}`);
 
-    /* eslint-disable @typescript-eslint/no-unused-vars */
-    const inputSchema = z.object({});
-    const outputSchema = z.object({ profile: z.string() });
-    /* eslint-enable @typescript-eslint/no-unused-vars */
-
     // AI処理のみ: Generate pet profile
-    const petProfilePrompt = ai.prompt<typeof inputSchema, typeof outputSchema>(
-      "create-pet-profile"
-    );
+    const petProfilePrompt = ai.prompt<
+      typeof EmptySchema,
+      typeof PetProfileSchema
+    >("create-pet-profile");
     const { output } = await petProfilePrompt({});
-    if (!output || !output.profile) {
+    if (!output) {
       throw new Error("Failed to generate pet profile");
     }
 
     console.log(`Pet profile generated for: ${input.email}`);
 
     return {
-      profile: output.profile,
+      profile: output,
     };
   }
 );
@@ -49,7 +45,7 @@ export const createPetFlow = ai.defineFlow(
 // 分離されたFirestore保存関数
 export async function savePetToFirestore(
   email: string,
-  profile: string
+  profile: PetProfileData
 ): Promise<string> {
   const petRef = db.collection("pets").doc();
   const petId = petRef.id;
@@ -70,7 +66,7 @@ export async function savePetToFirestore(
 // 分離されたメール送信関数
 export async function sendPetCreationEmail(
   email: string,
-  profile: string
+  profile: PetProfileData
 ): Promise<void> {
   const subject = "[旅ペット作成完了]";
   const body = `
@@ -78,7 +74,7 @@ export async function sendPetCreationEmail(
 
 あなたの旅ペットが誕生しました🎉
 
-${profile}
+${JSON.stringify(profile)}
 
 これからこのペットが毎日旅日記をお届けします。
 どんな冒険が待っているか、お楽しみに！

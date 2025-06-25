@@ -34,7 +34,21 @@ describe("dailyDiaryFlow helpers", () => {
     });
 
     it("returns email and profile when pet exists", async () => {
-      const petData = { email: "user@example.com", profile: "pet profile" };
+      const petData = {
+        email: "user@example.com",
+        profile: {
+          name: "p",
+          persona_dna: {
+            personality: "a",
+            guiding_theme: "b",
+            emotional_trigger: "c",
+            mobility_range: "d",
+            interest_depth: "e",
+            temporal_focus: "f",
+          },
+          introduction: "i",
+        },
+      };
       const getMock = vi.fn().mockResolvedValue({
         exists: true,
         data: () => petData,
@@ -62,7 +76,12 @@ describe("dailyDiaryFlow helpers", () => {
     });
 
     it("should save diary to Firestore with correct path and data", async () => {
-      const itinerary = "Tokyo";
+      const itinerary = {
+        selected_location: "Tokyo",
+        summary: "s",
+        news_context: "n",
+        local_details: "l",
+      };
       const diary = "Today I visited temples.";
       const petId = "pet123";
       const today = new Date().toISOString().split("T")[0];
@@ -98,7 +117,12 @@ describe("dailyDiaryFlow helpers", () => {
     });
 
     it("saves and retrieves itinerary for a pet", async () => {
-      const itinerary = "Osaka";
+      const itinerary = {
+        selected_location: "Osaka",
+        summary: "s",
+        news_context: "n",
+        local_details: "l",
+      };
       const petId = "petXYZ";
       const getMock = vi.fn().mockResolvedValue({ exists: true, data: () => ({ nextDestination: itinerary }) });
       const updateMock = vi.fn().mockResolvedValue(undefined);
@@ -130,14 +154,19 @@ describe("dailyDiaryFlow helpers", () => {
     it("should call sendEmail with correct subject and body containing diary", async () => {
       const sendEmailMock = vi.spyOn(emailUtils, "sendEmail").mockResolvedValue();
       const email = "user@example.com";
-      const itinerary = "Kyoto";
+      const itinerary = {
+        selected_location: "Kyoto",
+        summary: "s",
+        news_context: "n",
+        local_details: "l",
+      };
       const diary = "I saw temples.";
 
       await sendDiaryEmail(email, itinerary, diary);
 
       expect(sendEmailMock).toHaveBeenCalledWith(
         email,
-        `[旅日記] ${itinerary}`,
+        "[旅日記] Kyoto",
         expect.stringContaining(diary)
       );
 

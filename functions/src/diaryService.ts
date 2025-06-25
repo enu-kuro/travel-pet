@@ -28,11 +28,12 @@ export async function generateDestinationsForAllPets(): Promise<void> {
         return;
       }
 
-      const result = await generateDestinationFlow({ profile: petData.profile });
+      const destination = await generateDestinationFlow({
+        persona_dna: petData.profile.persona_dna,
+        date: new Date().toISOString().split("T")[0],
+      });
 
-      if (result.success && result.itinerary) {
-        await saveDestinationToFirestore(petId, result.itinerary);
-      }
+      await saveDestinationToFirestore(petId, destination);
 
       console.log(`Destination generated for pet: ${petId}`);
     } catch (error) {
@@ -70,14 +71,12 @@ export async function generateDiaryEntriesForAllPets(): Promise<void> {
       }
 
       const diaryResult = await generateDiaryFlow({
-        profile: petData.profile,
-        destination: itinerary,
+        persona_dna: petData.profile.persona_dna,
+        travel_material: itinerary,
       });
 
-      if (diaryResult.success && diaryResult.diary) {
-        await saveDiaryToFirestore(petId, itinerary, diaryResult.diary);
-        await sendDiaryEmail(petData.email, itinerary, diaryResult.diary);
-      }
+      await saveDiaryToFirestore(petId, itinerary, diaryResult.diary);
+      await sendDiaryEmail(petData.email, itinerary, diaryResult.diary);
 
       console.log(`Diary generated for pet: ${petId}`);
     } catch (error) {

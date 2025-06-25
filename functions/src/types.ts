@@ -1,13 +1,15 @@
+import { Destination, PetProfileData } from "./genkit.config";
+
 export interface PetProfile {
   email: string;
-  profile: string;
+  profile: PetProfileData;
   createdAt: FirebaseFirestore.Timestamp;
-  nextDestination?: string;
-  destinations?: string[];
+  nextDestination?: Destination;
+  destinations?: Destination[];
 }
 
 export interface DiaryEntry {
-  itinerary: string;
+  itinerary: Destination;
   diary: string;
   date: string;
 }

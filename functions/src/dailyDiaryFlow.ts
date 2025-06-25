@@ -1,73 +1,54 @@
-import { z } from "zod";
 import { sendEmail } from "./email";
 import { PetProfile, DiaryEntry } from "./types";
 import { db } from "./firebase";
 import { FieldValue } from "firebase-admin/firestore";
-import { ai } from "./genkit.config";
-
-// Zod schemas for input/output validation
-const DestinationInputSchema = z.object({
-  profile: z.string(),
-});
-
-const DestinationOutputSchema = z.object({
-  success: z.boolean(),
-  itinerary: z.string().optional(),
-});
-
-const DiaryInputSchema = z.object({
-  profile: z.string(),
-  destination: z.string(),
-});
-
-const DiaryOutputSchema = z.object({
-  success: z.boolean(),
-  diary: z.string().optional(),
-});
-
+import {
+  ai,
+  DestinationSchema,
+  GenerateDestinationInputSchema,
+  GenerateDiaryInputSchema,
+  DiarySchema,
+  Destination,
+  PetProfileData,
+} from "./genkit.config";
 
 const generateDestinationPrompt = ai.prompt<
-  z.ZodObject<{ profile: z.ZodString }>,
-  z.ZodObject<{ destination: z.ZodString }>
+  typeof GenerateDestinationInputSchema,
+  typeof DestinationSchema
 >("generate-destination");
 
 const generateDiaryPrompt = ai.prompt<
-  z.ZodObject<{ profile: z.ZodString; destination: z.ZodString }>,
-  z.ZodObject<{ diary: z.ZodString }>
+  typeof GenerateDiaryInputSchema,
+  typeof DiarySchema
 >("generate-diary");
 
 export const generateDestinationFlow = ai.defineFlow(
   {
     name: "generateDestinationFlow",
-    inputSchema: DestinationInputSchema,
-    outputSchema: DestinationOutputSchema,
+    inputSchema: GenerateDestinationInputSchema,
+    outputSchema: DestinationSchema,
   },
   async (input) => {
-    const { output } = await generateDestinationPrompt({ profile: input.profile });
-    if (!output || !output.destination) {
-      console.error("Failed to generate destination");
-      return { success: false };
+    const { output } = await generateDestinationPrompt(input);
+    if (!output) {
+      throw new Error("Failed to generate destination");
     }
-    return { success: true, itinerary: output.destination };
+    return output;
   }
 );
 
 export const generateDiaryFlow = ai.defineFlow(
   {
     name: "generateDiaryFlow",
-    inputSchema: DiaryInputSchema,
-    outputSchema: DiaryOutputSchema,
+    inputSchema: GenerateDiaryInputSchema,
+    outputSchema: DiarySchema,
   },
   async (input) => {
-    const { output } = await generateDiaryPrompt({
-      profile: input.profile,
-      destination: input.destination,
-    });
-    if (!output || !output.diary) {
-      console.error("Failed to generate diary");
-      return { success: false };
+    const { output } = await generateDiaryPrompt(input);
+    if (!output) {
+      throw new Error("Failed to generate diary");
     }
-    return { success: true, diary: output.diary };
+    return output;
   }
 );
 
@@ -75,7 +56,7 @@ export const generateDiaryFlow = ai.defineFlow(
 // 分離されたFirestore読み取り関数
 export async function getPetFromFirestore(
   petId: string
-): Promise<{ email: string; profile: string } | null> {
+): Promise<{ email: string; profile: PetProfileData } | null> {
   const petDoc = await db.collection("pets").doc(petId).get();
 
   if (!petDoc.exists) {
@@ -92,7 +73,7 @@ export async function getPetFromFirestore(
 
 export async function saveDestinationToFirestore(
   petId: string,
-  itinerary: string
+  itinerary: Destination
 ): Promise<void> {
   await db
     .collection("pets")
@@ -107,7 +88,7 @@ export async function saveDestinationToFirestore(
 
 export async function getDestinationFromFirestore(
   petId: string
-): Promise<string | null> {
+): Promise<Destination | null> {
   const petDoc = await db.collection("pets").doc(petId).get();
 
   if (!petDoc.exists) {
@@ -121,7 +102,7 @@ export async function getDestinationFromFirestore(
 // 分離されたFirestore保存関数
 export async function saveDiaryToFirestore(
   petId: string,
-  itinerary: string,
+  itinerary: Destination,
   diary: string
 ): Promise<void> {
   const today = new Date().toISOString().split("T")[0];
@@ -144,10 +125,11 @@ export async function saveDiaryToFirestore(
 // 分離されたメール送信関数
 export async function sendDiaryEmail(
   email: string,
-  itinerary: string,
+  itinerary: Destination,
   diary: string
 ): Promise<void> {
-  const subject = `[旅日記] ${itinerary}`;
+  const location = itinerary.selected_location ?? "";
+  const subject = `[旅日記] ${location}`;
   const body = `
 こんにちは！
 
@@ -161,5 +143,5 @@ ${diary}
 `;
 
   await sendEmail(email, subject, body);
-  console.log(`Diary email sent to: ${email} for ${itinerary}`);
+  console.log(`Diary email sent to: ${email} for ${location}`);
 }
