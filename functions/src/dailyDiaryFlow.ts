@@ -2,18 +2,29 @@ import { z } from "zod";
 import { sendEmail } from "./email";
 import { PetProfile, DiaryEntry } from "./types";
 import { db } from "./firebase";
+import { FieldValue } from "firebase-admin/firestore";
 import { ai } from "./genkit.config";
 
 // Zod schemas for input/output validation
-const DailyDiaryInputSchema = z.object({
-  profile: z.string(), // Firestoreから読み取った profile を直接受け取る
+const DestinationInputSchema = z.object({
+  profile: z.string(),
 });
 
-const DailyDiaryOutputSchema = z.object({
+const DestinationOutputSchema = z.object({
   success: z.boolean(),
   itinerary: z.string().optional(),
+});
+
+const DiaryInputSchema = z.object({
+  profile: z.string(),
+  destination: z.string(),
+});
+
+const DiaryOutputSchema = z.object({
+  success: z.boolean(),
   diary: z.string().optional(),
 });
+
 
 const generateDestinationPrompt = ai.prompt<
   z.ZodObject<{ profile: z.ZodString }>,
@@ -25,48 +36,41 @@ const generateDiaryPrompt = ai.prompt<
   z.ZodObject<{ diary: z.ZodString }>
 >("generate-diary");
 
-// Flow #2: Daily Diary Generation Flow (AI処理のみ)
-export const dailyDiaryFlow = ai.defineFlow(
+export const generateDestinationFlow = ai.defineFlow(
   {
-    name: "dailyDiaryFlow",
-    inputSchema: DailyDiaryInputSchema,
-    outputSchema: DailyDiaryOutputSchema,
+    name: "generateDestinationFlow",
+    inputSchema: DestinationInputSchema,
+    outputSchema: DestinationOutputSchema,
   },
   async (input) => {
-    console.log(
-      `Generating diary for profile: ${input.profile.substring(0, 50)}...`
-    );
-
-    // AI処理のみ: 旅行先生成
-    const { output: destOutput } = await generateDestinationPrompt({
-      profile: input.profile,
-    });
-    if (!destOutput || !destOutput.destination) {
+    const { output } = await generateDestinationPrompt({ profile: input.profile });
+    if (!output || !output.destination) {
       console.error("Failed to generate destination");
       return { success: false };
     }
-    const itinerary = destOutput.destination;
+    return { success: true, itinerary: output.destination };
+  }
+);
 
-    // AI処理のみ: 日記生成
-    const { output: diaryOutput } = await generateDiaryPrompt({
+export const generateDiaryFlow = ai.defineFlow(
+  {
+    name: "generateDiaryFlow",
+    inputSchema: DiaryInputSchema,
+    outputSchema: DiaryOutputSchema,
+  },
+  async (input) => {
+    const { output } = await generateDiaryPrompt({
       profile: input.profile,
-      destination: itinerary,
+      destination: input.destination,
     });
-    if (!diaryOutput || !diaryOutput.diary) {
+    if (!output || !output.diary) {
       console.error("Failed to generate diary");
       return { success: false };
     }
-    const diary = diaryOutput.diary;
-
-    console.log(`Diary generated: ${itinerary}`);
-
-    return {
-      success: true,
-      itinerary: itinerary,
-      diary: diary,
-    };
+    return { success: true, diary: output.diary };
   }
 );
+
 
 // 分離されたFirestore読み取り関数
 export async function getPetFromFirestore(
@@ -84,6 +88,34 @@ export async function getPetFromFirestore(
     email: petData.email,
     profile: petData.profile,
   };
+}
+
+export async function saveDestinationToFirestore(
+  petId: string,
+  itinerary: string
+): Promise<void> {
+  await db
+    .collection("pets")
+    .doc(petId)
+    .update({
+      nextDestination: itinerary,
+      destinations: FieldValue.arrayUnion(itinerary),
+    });
+
+  console.log(`Destination saved to Firestore for pet: ${petId}`);
+}
+
+export async function getDestinationFromFirestore(
+  petId: string
+): Promise<string | null> {
+  const petDoc = await db.collection("pets").doc(petId).get();
+
+  if (!petDoc.exists) {
+    return null;
+  }
+
+  const data = petDoc.data() as Partial<PetProfile>;
+  return data.nextDestination ?? null;
 }
 
 // 分離されたFirestore保存関数

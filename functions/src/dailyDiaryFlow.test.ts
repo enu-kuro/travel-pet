@@ -3,6 +3,8 @@ import * as index from "./index";
 import * as emailUtils from "./email";
 import {
   getPetFromFirestore,
+  saveDestinationToFirestore,
+  getDestinationFromFirestore,
   saveDiaryToFirestore,
   sendDiaryEmail,
 } from "./dailyDiaryFlow";
@@ -87,6 +89,36 @@ describe("dailyDiaryFlow helpers", () => {
       expect(diariesCollectionMock).toHaveBeenCalledWith("diaries");
       expect(diaryDocMock).toHaveBeenCalledWith(today);
       expect(setMock).toHaveBeenCalledWith({ itinerary, diary, date: today });
+    });
+  });
+
+  describe("saveDestinationToFirestore and getDestinationFromFirestore", () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it("saves and retrieves itinerary for a pet", async () => {
+      const itinerary = "Osaka";
+      const petId = "petXYZ";
+      const getMock = vi.fn().mockResolvedValue({ exists: true, data: () => ({ nextDestination: itinerary }) });
+      const updateMock = vi.fn().mockResolvedValue(undefined);
+
+      const petDocMock = vi.fn().mockReturnValue({ update: updateMock, get: getMock });
+      const collectionMock = vi.fn().mockReturnValue({ doc: petDocMock });
+
+      vi.spyOn(index.db, "collection").mockImplementation(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        collectionMock as any
+      );
+
+      await saveDestinationToFirestore(petId, itinerary);
+      const result = await getDestinationFromFirestore(petId);
+
+      expect(collectionMock).toHaveBeenCalledWith("pets");
+      expect(petDocMock).toHaveBeenCalledWith(petId);
+      expect(updateMock).toHaveBeenCalled();
+      expect(updateMock.mock.calls[0][0].nextDestination).toBe(itinerary);
+      expect(result).toBe(itinerary);
     });
   });
 

@@ -7,12 +7,6 @@ import {
   sendPetCreationEmail,
 } from "./createPetFlow";
 import {
-  dailyDiaryFlow,
-  getPetFromFirestore,
-  saveDiaryToFirestore,
-  sendDiaryEmail,
-} from "./dailyDiaryFlow";
-import {
   getImapClient,
   getAliasEmailAddress,
 } from "./email";
@@ -128,38 +122,3 @@ export async function checkNewEmailsAndCreatePet(
   });
 }
 
-export async function generateDiariesForAllPets(): Promise<void> {
-  const petsSnapshot = await db.collection("pets").get();
-
-  if (petsSnapshot.empty) {
-    console.log("No pets found");
-    return;
-  }
-
-  console.log(`Processing ${petsSnapshot.size} pets`);
-
-  const promises = petsSnapshot.docs.map(async (petDoc) => {
-    const petId = petDoc.id;
-    try {
-      const petData = await getPetFromFirestore(petId);
-      if (!petData) {
-        console.error(`Failed to get pet data for: ${petId}`);
-        return;
-      }
-
-      const result = await dailyDiaryFlow({ profile: petData.profile });
-
-      if (result.success && result.itinerary && result.diary) {
-        await saveDiaryToFirestore(petId, result.itinerary, result.diary);
-        await sendDiaryEmail(petData.email, result.itinerary, result.diary);
-      }
-
-      console.log(`Diary generated for pet: ${petId}`);
-    } catch (error) {
-      console.error(`Failed to generate diary for pet ${petId}:`, error);
-    }
-  });
-
-  await Promise.allSettled(promises);
-  console.log("Diary generation completed");
-}
