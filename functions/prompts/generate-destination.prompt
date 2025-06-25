@@ -1,12 +1,14 @@
 ---
-model: vertexai/gemini-2.0-flash-lite
+model: vertexai/gemini-2.0-flash
 config:
   temperature: 2.0
+  googleSearchRetrieval: {} 
 input:
   schema: GenerateDestinationInput
-output:
-  format: json
-  schema: DestinationSchema
+# output schemaがあるとなぜかgoogleSearchRetrievalが使えない...
+# output:
+#   format: json
+#   schema: DestinationSchema
 ---
 あなたは「旅するデジタルペット」の旅先選定AIです。
 
