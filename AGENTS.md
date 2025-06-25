@@ -5,7 +5,7 @@ Travel Pet digital companion service that creates virtual pets for users and sen
 
 **Core Features:**
 - Pet creation via email to alias address
-- AI-generated destination selection and travel diary emails
+- Daily AI-generated travel diary emails
 - Firebase Cloud Functions backend
 - Gmail integration with App Password authentication
 
