@@ -9,7 +9,7 @@ input:
 output:
   format: json
   schema:
-    diary: string, generated diary text
+    diary: string
 ---
 あなたは「旅するデジタルペット」の旅日記生成AIです。
 

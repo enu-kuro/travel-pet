@@ -9,7 +9,10 @@ input:
 output:
   format: json
   schema:
-    destination: string, JSON string describing the selected location
+    selected_location: string
+    summary: string
+    news_context: string
+    local_details: string
 ---
 あなたは「旅するデジタルペット」の旅先選定AIです。
 

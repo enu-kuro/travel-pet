@@ -28,7 +28,12 @@ const DiaryOutputSchema = z.object({
 
 const generateDestinationPrompt = ai.prompt<
   z.ZodObject<{ persona_dna: z.ZodString; date: z.ZodString }>,
-  z.ZodObject<{ destination: z.ZodString }>
+  z.ZodObject<{
+    selected_location: z.ZodString;
+    summary: z.ZodString;
+    news_context: z.ZodString;
+    local_details: z.ZodString;
+  }>
 >("generate-destination");
 
 const generateDiaryPrompt = ai.prompt<
@@ -55,11 +60,11 @@ export const generateDestinationFlow = ai.defineFlow(
       persona_dna: JSON.stringify(personaDna),
       date: new Date().toISOString().split("T")[0],
     });
-    if (!output || !output.destination) {
+    if (!output) {
       console.error("Failed to generate destination");
       return { success: false };
     }
-    return { success: true, itinerary: output.destination };
+    return { success: true, itinerary: JSON.stringify(output) };
   }
 );
 

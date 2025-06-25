@@ -7,7 +7,15 @@ input:
 output:
   format: json
   schema:
-    profile: string, JSON string containing the generated pet profile
+    name: string
+    persona_dna:
+      personality: string
+      guiding_theme: string
+      emotional_trigger: string
+      mobility_range: string
+      interest_depth: string
+      temporal_focus: string
+    introduction: string
 ---
 # 前提：サービスの概要と目的
 

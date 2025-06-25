@@ -26,7 +26,18 @@ export const createPetFlow = ai.defineFlow(
 
     /* eslint-disable @typescript-eslint/no-unused-vars */
     const inputSchema = z.object({});
-    const outputSchema = z.object({ profile: z.string() });
+    const outputSchema = z.object({
+      name: z.string(),
+      persona_dna: z.object({
+        personality: z.string(),
+        guiding_theme: z.string(),
+        emotional_trigger: z.string(),
+        mobility_range: z.string(),
+        interest_depth: z.string(),
+        temporal_focus: z.string(),
+      }),
+      introduction: z.string(),
+    });
     /* eslint-enable @typescript-eslint/no-unused-vars */
 
     // AI処理のみ: Generate pet profile
@@ -34,14 +45,14 @@ export const createPetFlow = ai.defineFlow(
       "create-pet-profile"
     );
     const { output } = await petProfilePrompt({});
-    if (!output || !output.profile) {
+    if (!output) {
       throw new Error("Failed to generate pet profile");
     }
 
     console.log(`Pet profile generated for: ${input.email}`);
 
     return {
-      profile: output.profile,
+      profile: JSON.stringify(output),
     };
   }
 );
