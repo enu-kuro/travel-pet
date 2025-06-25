@@ -5,8 +5,9 @@ config:
 input:
   schema: {}
 output:
+  format: json
   schema:
-    profile: string
+    profile: string, JSON string containing the generated pet profile
 ---
 # 前提：サービスの概要と目的
 

@@ -7,8 +7,9 @@ input:
     persona_dna: string
     travel_material: string
 output:
+  format: json
   schema:
-    diary: string
+    diary: string, generated diary text
 ---
 あなたは「旅するデジタルペット」の旅日記生成AIです。
 

@@ -7,8 +7,9 @@ input:
     persona_dna: string
     date: string
 output:
+  format: json
   schema:
-    destination: string
+    destination: string, JSON string describing the selected location
 ---
 あなたは「旅するデジタルペット」の旅先選定AIです。
 
