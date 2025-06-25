@@ -28,13 +28,12 @@ export async function generateDestinationsForAllPets(): Promise<void> {
         return;
       }
 
-      const profileObj = JSON.parse(petData.profile);
       const destination = await generateDestinationFlow({
-        persona_dna: profileObj.persona_dna,
+        persona_dna: petData.profile.persona_dna,
         date: new Date().toISOString().split("T")[0],
       });
 
-      await saveDestinationToFirestore(petId, JSON.stringify(destination));
+      await saveDestinationToFirestore(petId, destination);
 
       console.log(`Destination generated for pet: ${petId}`);
     } catch (error) {
@@ -71,16 +70,12 @@ export async function generateDiaryEntriesForAllPets(): Promise<void> {
         return;
       }
 
-      const profileObj = JSON.parse(petData.profile);
-      const itineraryObj = JSON.parse(itinerary);
-
       const diaryResult = await generateDiaryFlow({
-        persona_dna: profileObj.persona_dna,
-        travel_material: itineraryObj,
+        persona_dna: petData.profile.persona_dna,
+        travel_material: itinerary,
       });
 
-      const location = itineraryObj.selected_location ?? "";
-      await saveDiaryToFirestore(petId, location, diaryResult.diary);
+      await saveDiaryToFirestore(petId, itinerary, diaryResult.diary);
       await sendDiaryEmail(petData.email, itinerary, diaryResult.diary);
 
       console.log(`Diary generated for pet: ${petId}`);

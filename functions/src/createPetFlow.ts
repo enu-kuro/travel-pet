@@ -3,7 +3,7 @@ import { z } from "zod";
 import { sendEmail } from "./email";
 import { PetProfile } from "./types";
 import { db } from "./firebase";
-import { ai, EmptySchema, PetProfileSchema } from "./genkit.config";
+import { ai, EmptySchema, PetProfileSchema, PetProfileData } from "./genkit.config";
 
 // Zod schemas for input/output validation
 const CreatePetInputSchema = z.object({
@@ -11,7 +11,7 @@ const CreatePetInputSchema = z.object({
 });
 
 const CreatePetOutputSchema = z.object({
-  profile: z.string(),
+  profile: PetProfileSchema,
 });
 
 // Flow #1: Pet Creation Flow (AI処理のみ)
@@ -37,7 +37,7 @@ export const createPetFlow = ai.defineFlow(
     console.log(`Pet profile generated for: ${input.email}`);
 
     return {
-      profile: JSON.stringify(output),
+      profile: output,
     };
   }
 );
@@ -45,7 +45,7 @@ export const createPetFlow = ai.defineFlow(
 // 分離されたFirestore保存関数
 export async function savePetToFirestore(
   email: string,
-  profile: string
+  profile: PetProfileData
 ): Promise<string> {
   const petRef = db.collection("pets").doc();
   const petId = petRef.id;
@@ -66,7 +66,7 @@ export async function savePetToFirestore(
 // 分離されたメール送信関数
 export async function sendPetCreationEmail(
   email: string,
-  profile: string
+  profile: PetProfileData
 ): Promise<void> {
   const subject = "[旅ペット作成完了]";
   const body = `
@@ -74,7 +74,7 @@ export async function sendPetCreationEmail(
 
 あなたの旅ペットが誕生しました🎉
 
-${profile}
+${JSON.stringify(profile)}
 
 これからこのペットが毎日旅日記をお届けします。
 どんな冒険が待っているか、お楽しみに！

@@ -8,6 +8,8 @@ import {
   GenerateDestinationInputSchema,
   GenerateDiaryInputSchema,
   DiarySchema,
+  Destination,
+  PetProfileData,
 } from "./genkit.config";
 
 const generateDestinationPrompt = ai.prompt<
@@ -54,7 +56,7 @@ export const generateDiaryFlow = ai.defineFlow(
 // 分離されたFirestore読み取り関数
 export async function getPetFromFirestore(
   petId: string
-): Promise<{ email: string; profile: string } | null> {
+): Promise<{ email: string; profile: PetProfileData } | null> {
   const petDoc = await db.collection("pets").doc(petId).get();
 
   if (!petDoc.exists) {
@@ -71,7 +73,7 @@ export async function getPetFromFirestore(
 
 export async function saveDestinationToFirestore(
   petId: string,
-  itinerary: string
+  itinerary: Destination
 ): Promise<void> {
   await db
     .collection("pets")
@@ -86,7 +88,7 @@ export async function saveDestinationToFirestore(
 
 export async function getDestinationFromFirestore(
   petId: string
-): Promise<string | null> {
+): Promise<Destination | null> {
   const petDoc = await db.collection("pets").doc(petId).get();
 
   if (!petDoc.exists) {
@@ -100,7 +102,7 @@ export async function getDestinationFromFirestore(
 // 分離されたFirestore保存関数
 export async function saveDiaryToFirestore(
   petId: string,
-  itinerary: string,
+  itinerary: Destination,
   diary: string
 ): Promise<void> {
   const today = new Date().toISOString().split("T")[0];
@@ -123,18 +125,10 @@ export async function saveDiaryToFirestore(
 // 分離されたメール送信関数
 export async function sendDiaryEmail(
   email: string,
-  itinerary: string,
+  itinerary: Destination,
   diary: string
 ): Promise<void> {
-  let location = itinerary;
-  try {
-    const parsed = JSON.parse(itinerary);
-    if (parsed.selected_location) {
-      location = parsed.selected_location;
-    }
-  } catch {
-    // ignore parsing errors and use raw itinerary
-  }
+  const location = itinerary.selected_location ?? "";
   const subject = `[旅日記] ${location}`;
   const body = `
 こんにちは！

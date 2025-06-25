@@ -63,3 +63,8 @@ export const DiarySchema = ai.defineSchema(
     diary: z.string(),
   })
 );
+
+export type Persona = z.infer<typeof PersonaSchema>;
+export type PetProfileData = z.infer<typeof PetProfileSchema>;
+export type Destination = z.infer<typeof DestinationSchema>;
+export type DiaryData = z.infer<typeof DiarySchema>;
