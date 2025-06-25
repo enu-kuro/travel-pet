@@ -2,6 +2,7 @@ import { z } from "zod";
 import { sendEmail } from "./email";
 import { PetProfile, DiaryEntry } from "./types";
 import { db } from "./firebase";
+import { FieldValue } from "firebase-admin/firestore";
 import { ai } from "./genkit.config";
 
 // Zod schemas for input/output validation
@@ -93,14 +94,13 @@ export async function saveDestinationToFirestore(
   petId: string,
   itinerary: string
 ): Promise<void> {
-  const today = new Date().toISOString().split("T")[0];
-
   await db
     .collection("pets")
     .doc(petId)
-    .collection("diaries")
-    .doc(today)
-    .set({ itinerary, date: today });
+    .update({
+      nextDestination: itinerary,
+      destinations: FieldValue.arrayUnion(itinerary),
+    });
 
   console.log(`Destination saved to Firestore for pet: ${petId}`);
 }
@@ -108,20 +108,14 @@ export async function saveDestinationToFirestore(
 export async function getDestinationFromFirestore(
   petId: string
 ): Promise<string | null> {
-  const today = new Date().toISOString().split("T")[0];
-  const diaryDoc = await db
-    .collection("pets")
-    .doc(petId)
-    .collection("diaries")
-    .doc(today)
-    .get();
+  const petDoc = await db.collection("pets").doc(petId).get();
 
-  if (!diaryDoc.exists) {
+  if (!petDoc.exists) {
     return null;
   }
 
-  const data = diaryDoc.data() as Partial<DiaryEntry>;
-  return data.itinerary ?? null;
+  const data = petDoc.data() as Partial<PetProfile>;
+  return data.nextDestination ?? null;
 }
 
 // 分離されたFirestore保存関数

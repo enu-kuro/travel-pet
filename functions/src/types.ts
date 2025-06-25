@@ -2,6 +2,8 @@ export interface PetProfile {
   email: string;
   profile: string;
   createdAt: FirebaseFirestore.Timestamp;
+  nextDestination?: string;
+  destinations?: string[];
 }
 
 export interface DiaryEntry {

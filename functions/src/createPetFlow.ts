@@ -58,6 +58,7 @@ export async function savePetToFirestore(
     email: email,
     profile: profile,
     createdAt: Timestamp.fromDate(new Date()),
+    destinations: [],
   };
 
   await petRef.set(petData);

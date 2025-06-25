@@ -31,6 +31,7 @@ describe("createPetFlow helpers", () => {
         email,
         profile,
         createdAt: expect.any(Timestamp),
+        destinations: [],
       });
       expect(petId).toBe("mockedPetId");
     });
