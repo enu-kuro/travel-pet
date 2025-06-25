@@ -88,4 +88,6 @@ Use conventional commits:
 - `fix:` bug fixes
 - `refactor:` code improvements
 - `docs:` documentation updates
-```
+
+### 🔢 Branch Naming Rules
+- Use **alphabet-only** branch names
