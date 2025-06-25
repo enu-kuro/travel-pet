@@ -130,14 +130,20 @@ describe("dailyDiaryFlow helpers", () => {
     it("should call sendEmail with correct subject and body containing diary", async () => {
       const sendEmailMock = vi.spyOn(emailUtils, "sendEmail").mockResolvedValue();
       const email = "user@example.com";
-      const itinerary = "Kyoto";
+      const itineraryObj = {
+        selected_location: "Kyoto",
+        summary: "s",
+        news_context: "n",
+        local_details: "l",
+      };
+      const itinerary = JSON.stringify(itineraryObj);
       const diary = "I saw temples.";
 
       await sendDiaryEmail(email, itinerary, diary);
 
       expect(sendEmailMock).toHaveBeenCalledWith(
         email,
-        `[旅日記] ${itinerary}`,
+        "[旅日記] Kyoto",
         expect.stringContaining(diary)
       );
 

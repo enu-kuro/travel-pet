@@ -75,7 +75,13 @@ export async function generateDiaryEntriesForAllPets(): Promise<void> {
       });
 
       if (diaryResult.success && diaryResult.diary) {
-        await saveDiaryToFirestore(petId, itinerary, diaryResult.diary);
+        let location = "";
+        try {
+          location = JSON.parse(itinerary).selected_location;
+        } catch {
+          location = itinerary;
+        }
+        await saveDiaryToFirestore(petId, location, diaryResult.diary);
         await sendDiaryEmail(petData.email, itinerary, diaryResult.diary);
       }
 

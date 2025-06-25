@@ -27,12 +27,12 @@ const DiaryOutputSchema = z.object({
 
 
 const generateDestinationPrompt = ai.prompt<
-  z.ZodObject<{ profile: z.ZodString }>,
+  z.ZodObject<{ persona_dna: z.ZodString; date: z.ZodString }>,
   z.ZodObject<{ destination: z.ZodString }>
 >("generate-destination");
 
 const generateDiaryPrompt = ai.prompt<
-  z.ZodObject<{ profile: z.ZodString; destination: z.ZodString }>,
+  z.ZodObject<{ persona_dna: z.ZodString; travel_material: z.ZodString }>,
   z.ZodObject<{ diary: z.ZodString }>
 >("generate-diary");
 
@@ -43,7 +43,18 @@ export const generateDestinationFlow = ai.defineFlow(
     outputSchema: DestinationOutputSchema,
   },
   async (input) => {
-    const { output } = await generateDestinationPrompt({ profile: input.profile });
+    let personaDna: unknown;
+    try {
+      personaDna = JSON.parse(input.profile).persona_dna;
+    } catch (e) {
+      console.error("Invalid profile JSON", e);
+      return { success: false };
+    }
+
+    const { output } = await generateDestinationPrompt({
+      persona_dna: JSON.stringify(personaDna),
+      date: new Date().toISOString().split("T")[0],
+    });
     if (!output || !output.destination) {
       console.error("Failed to generate destination");
       return { success: false };
@@ -59,9 +70,17 @@ export const generateDiaryFlow = ai.defineFlow(
     outputSchema: DiaryOutputSchema,
   },
   async (input) => {
+    let personaDna: unknown;
+    try {
+      personaDna = JSON.parse(input.profile).persona_dna;
+    } catch (e) {
+      console.error("Invalid profile JSON", e);
+      return { success: false };
+    }
+
     const { output } = await generateDiaryPrompt({
-      profile: input.profile,
-      destination: input.destination,
+      persona_dna: JSON.stringify(personaDna),
+      travel_material: input.destination,
     });
     if (!output || !output.diary) {
       console.error("Failed to generate diary");
@@ -147,7 +166,16 @@ export async function sendDiaryEmail(
   itinerary: string,
   diary: string
 ): Promise<void> {
-  const subject = `[旅日記] ${itinerary}`;
+  let location = itinerary;
+  try {
+    const parsed = JSON.parse(itinerary);
+    if (parsed.selected_location) {
+      location = parsed.selected_location;
+    }
+  } catch {
+    // ignore parsing errors and use raw itinerary
+  }
+  const subject = `[旅日記] ${location}`;
   const body = `
 こんにちは！
 
@@ -161,5 +189,5 @@ ${diary}
 `;
 
   await sendEmail(email, subject, body);
-  console.log(`Diary email sent to: ${email} for ${itinerary}`);
+  console.log(`Diary email sent to: ${email} for ${location}`);
 }
