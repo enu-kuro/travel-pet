@@ -1,8 +1,6 @@
 import { db } from "./firebase";
-import {
-  generateDestinationFlow,
-  generateDiaryFlow,
-} from "./diaryFlows";
+import { generateDestinationFlow } from "./generateDestinationFlow";
+import { generateDiaryFlow } from "./generateDiaryFlow";
 import {
   getPetFromFirestore,
   saveDestinationToFirestore,
