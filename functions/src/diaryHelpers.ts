@@ -51,7 +51,8 @@ export async function saveImageToStorage(
   const filePath = `diaryImages/${petId}/${date}.png`;
   const file = bucket.file(filePath);
   await file.save(buffer, { contentType: "image/png" });
-  return file.publicUrl();
+  const encodedPath = encodeURIComponent(filePath);
+  return `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedPath}?alt=media`;
 }
 
 // 分離されたFirestore保存関数
