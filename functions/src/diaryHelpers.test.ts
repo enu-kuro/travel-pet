@@ -4,7 +4,6 @@ import * as emailUtils from "./email";
 import {
   getPetFromFirestore,
   saveDestinationToFirestore,
-  getDestinationFromFirestore,
   saveDiaryToFirestore,
   sendDiaryEmail,
 } from "./diaryHelpers";
@@ -117,12 +116,12 @@ describe("diary helpers", () => {
     });
   });
 
-  describe("saveDestinationToFirestore and getDestinationFromFirestore", () => {
+  describe("saveDestinationToFirestore", () => {
     beforeEach(() => {
       vi.clearAllMocks();
     });
 
-    it("saves and retrieves itinerary for a pet", async () => {
+    it("saves itinerary for a pet", async () => {
       const itinerary = {
         selected_location: "Osaka",
         summary: "s",
@@ -130,10 +129,9 @@ describe("diary helpers", () => {
         local_details: "l",
       };
       const petId = "petXYZ";
-      const getMock = vi.fn().mockResolvedValue({ exists: true, data: () => ({ nextDestination: itinerary }) });
       const updateMock = vi.fn().mockResolvedValue(undefined);
 
-      const petDocMock = vi.fn().mockReturnValue({ update: updateMock, get: getMock });
+      const petDocMock = vi.fn().mockReturnValue({ update: updateMock });
       const collectionMock = vi.fn().mockReturnValue({ doc: petDocMock });
 
       vi.spyOn(index.db, "collection").mockImplementation(
@@ -142,13 +140,12 @@ describe("diary helpers", () => {
       );
 
       await saveDestinationToFirestore(petId, itinerary);
-      const result = await getDestinationFromFirestore(petId);
 
       expect(collectionMock).toHaveBeenCalledWith("pets");
       expect(petDocMock).toHaveBeenCalledWith(petId);
-      expect(updateMock).toHaveBeenCalled();
-      expect(updateMock.mock.calls[0][0].nextDestination).toBe(itinerary);
-      expect(result).toBe(itinerary);
+      expect(updateMock).toHaveBeenCalledWith(
+        expect.objectContaining({ nextDestination: itinerary })
+      );
     });
   });
 

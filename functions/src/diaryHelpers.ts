@@ -39,18 +39,6 @@ export async function saveDestinationToFirestore(
   console.log(`Destination saved to Firestore for pet: ${petId}`);
 }
 
-export async function getDestinationFromFirestore(
-  petId: string
-): Promise<Destination | null> {
-  const petDoc = await db.collection("pets").doc(petId).get();
-
-  if (!petDoc.exists) {
-    return null;
-  }
-
-  const data = petDoc.data() as Partial<PetProfile>;
-  return data.nextDestination ?? null;
-}
 
 export async function saveImageToStorage(
   dataUrl: string,
