@@ -63,11 +63,7 @@ export async function saveImageToStorage(
   const filePath = `diaryImages/${petId}/${date}.png`;
   const file = bucket.file(filePath);
   await file.save(buffer, { contentType: "image/png" });
-  const [url] = await file.getSignedUrl({
-    action: "read",
-    expires: Date.now() + 365 * 24 * 60 * 60 * 1000,
-  });
-  return url;
+  return file.publicUrl();
 }
 
 // 分離されたFirestore保存関数
