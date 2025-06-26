@@ -31,14 +31,6 @@ export const PetProfileSchema = ai.defineSchema(
   })
 );
 
-export const GenerateDestinationInputSchema = ai.defineSchema(
-  "GenerateDestinationInput",
-  z.object({
-    persona_dna: PersonaSchema,
-    date: z.string(),
-  })
-);
-
 export const DestinationSchema = ai.defineSchema(
   "DestinationSchema",
   z.object({
@@ -46,6 +38,15 @@ export const DestinationSchema = ai.defineSchema(
     summary: z.string(),
     news_context: z.string(),
     local_details: z.string(),
+  })
+);
+
+export const GenerateDestinationInputSchema = ai.defineSchema(
+  "GenerateDestinationInput",
+  z.object({
+    persona_dna: PersonaSchema,
+    date: z.string(),
+    past_destinations: z.array(z.string()).optional(),
   })
 );
 

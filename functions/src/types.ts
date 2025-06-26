@@ -5,7 +5,7 @@ export interface PetProfile {
   profile: PetProfileData;
   createdAt: FirebaseFirestore.Timestamp;
   nextDestination?: Destination;
-  destinations?: Destination[];
+  destinations?: string[];
 }
 
 export interface DiaryEntry {
