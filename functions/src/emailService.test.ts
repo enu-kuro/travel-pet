@@ -31,7 +31,7 @@ describe("processEmailMessage", () => {
     vi.mocked(simpleParser).mockResolvedValue({
       from: { value: [{ address: "user@example.com" }] },
       subject: "配信停止してください",
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
     const deleteMock = vi
@@ -70,7 +70,9 @@ describe("processEmailMessage", () => {
     const stream = Readable.from("dummy");
     await processEmailMessage(stream, 1, mockProcessor);
 
-    expect(mockProcessor.checkExistingPet).toHaveBeenCalledWith("user@example.com");
+    expect(mockProcessor.checkExistingPet).toHaveBeenCalledWith(
+      "user@example.com"
+    );
     expect(existingMock).toHaveBeenCalledWith("user@example.com");
     expect(mockProcessor.createPet).not.toHaveBeenCalled();
   });
@@ -87,8 +89,8 @@ describe("checkNewEmailsAndCreatePet", () => {
       connect(): void;
     }
 
-    const openBox = vi.fn(
-      (box: string, _r: boolean, cb: (e?: Error) => void) => cb()
+    const openBox = vi.fn((box: string, _r: boolean, cb: (e?: Error) => void) =>
+      cb()
     );
     const imapMock = new EventEmitter() as ImapMock;
     imapMock.openBox = openBox;
@@ -96,7 +98,9 @@ describe("checkNewEmailsAndCreatePet", () => {
       cb(null, [])
     );
     imapMock.fetch = vi.fn();
-    imapMock.addFlags = vi.fn((_: unknown, __: string[], cb: () => void) => cb());
+    imapMock.addFlags = vi.fn((_: unknown, __: string[], cb: () => void) =>
+      cb()
+    );
     imapMock.end = vi.fn();
     imapMock.connect = () => imapMock.emit("ready");
     imapMock.once = imapMock.on.bind(imapMock);
@@ -106,11 +110,15 @@ describe("checkNewEmailsAndCreatePet", () => {
 
     const processor: EmailProcessor = {
       checkExistingPet: vi.fn().mockResolvedValue(false),
-      createPet: vi.fn().mockResolvedValue(),
+      createPet: vi.fn().mockResolvedValue(undefined),
     };
 
     await checkNewEmailsAndCreatePet(undefined, processor);
 
-    expect(openBox).toHaveBeenCalledWith(TRAVEL_PET_LABEL, false, expect.any(Function));
+    expect(openBox).toHaveBeenCalledWith(
+      TRAVEL_PET_LABEL,
+      false,
+      expect.any(Function)
+    );
   });
 });
