@@ -4,7 +4,6 @@ import { onSchedule } from "firebase-functions/v2/scheduler";
 import { checkNewEmailsAndCreatePet } from "./emailService";
 import {
   generateDestinationsForAllPets,
-  generateDiaryEntriesForAllPets,
   generateDiariesForAllPets,
 } from "./diaryService";
 import { deleteExpiredPets } from "./petService";
@@ -52,7 +51,7 @@ export const dailyDiaryTrigger = onSchedule(
   },
   async () => {
     try {
-      await generateDiaryEntriesForAllPets();
+      await generateDiariesForAllPets();
     } catch (error) {
       console.error("Diary generation failed:", error);
       throw error;
@@ -107,19 +106,6 @@ export const manualDestinationGeneration = onRequest(
     } catch (error) {
       console.error("Destination generation failed:", error);
       res.status(500).send("Destination generation failed");
-    }
-  }
-);
-
-export const manualDiaryEntryGeneration = onRequest(
-  { secrets: [EMAIL_ADDRESS, EMAIL_APP_PASSWORD] },
-  async (_req, res) => {
-    try {
-      await generateDiaryEntriesForAllPets();
-      res.status(200).send("Diary entry generation completed");
-    } catch (error) {
-      console.error("Diary entry generation failed:", error);
-      res.status(500).send("Diary entry generation failed");
     }
   }
 );

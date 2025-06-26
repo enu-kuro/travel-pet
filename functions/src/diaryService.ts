@@ -45,7 +45,7 @@ export async function generateDestinationsForAllPets(): Promise<void> {
   console.log("Destination generation completed");
 }
 
-export async function generateDiaryEntriesForAllPets(): Promise<void> {
+export async function generateDiariesForAllPets(): Promise<void> {
   const petsSnapshot = await db.collection("pets").get();
 
   if (petsSnapshot.empty) {
@@ -86,9 +86,4 @@ export async function generateDiaryEntriesForAllPets(): Promise<void> {
 
   await Promise.allSettled(promises);
   console.log("Diary generation completed");
-}
-
-export async function generateDiariesForAllPets(): Promise<void> {
-  await generateDestinationsForAllPets();
-  await generateDiaryEntriesForAllPets();
 }
