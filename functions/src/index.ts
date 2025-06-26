@@ -8,6 +8,7 @@ import {
 } from "./diaryService";
 import { deleteExpiredPets } from "./petService";
 import { EMAIL_ADDRESS, EMAIL_APP_PASSWORD } from "./config";
+import { generateCatImage } from "./generateCatImage";
 
 export { db } from "./firebase";
 
@@ -126,4 +127,19 @@ export const manualDiaryGeneration = onRequest(
 // onRequest動作確認用
 export const helloWorld = onRequest(async (_req, res) => {
   res.status(200).send("✅ Hello from Gen 2 Cloud Functions!");
+});
+
+export const catImage = onRequest(async (_req, res) => {
+  try {
+    const { url } = await generateCatImage();
+    const [meta, data] = url.split(",");
+    const match = meta.match(/data:(.*);base64/);
+    const mimeType = match ? match[1] : "image/png";
+    const buffer = Buffer.from(data, "base64");
+    res.setHeader("Content-Type", mimeType);
+    res.status(200).send(buffer);
+  } catch (error) {
+    console.error("Image generation failed:", error);
+    res.status(500).send("Image generation failed");
+  }
 });
