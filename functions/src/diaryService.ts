@@ -5,7 +5,6 @@ import { generateDiaryImageFlow } from "./generateDiaryImageFlow";
 import {
   getPetFromFirestore,
   saveDestinationToFirestore,
-  getDestinationFromFirestore,
   saveDiaryToFirestore,
   sendDiaryEmail,
   saveImageToStorage,
@@ -67,11 +66,12 @@ export async function generateDiariesForAllPets(): Promise<void> {
         return;
       }
 
-      const itinerary = await getDestinationFromFirestore(petId);
-      if (!itinerary) {
-        console.error(`No destination found for pet ${petId}`);
-        return;
-      }
+      const itinerary = await generateDestinationFlow({
+        persona_dna: petData.profile.persona_dna,
+        date: new Date().toISOString().split("T")[0],
+      });
+
+      await saveDestinationToFirestore(petId, itinerary);
 
       const diaryResult = await generateDiaryFlow({
         persona_dna: petData.profile.persona_dna,
