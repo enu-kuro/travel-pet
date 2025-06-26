@@ -38,4 +38,29 @@ describe("processEmailMessage", () => {
     expect(mockProcessor.checkExistingPet).not.toHaveBeenCalled();
     expect(mockProcessor.createPet).not.toHaveBeenCalled();
   });
+
+  it("responds when pet already exists", async () => {
+    const mockProcessor: EmailProcessor = {
+      checkExistingPet: vi.fn().mockResolvedValue(true),
+      createPet: vi.fn(),
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(simpleParser).mockResolvedValue({
+      from: { value: [{ address: "user@example.com" }] },
+      subject: "こんにちは",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    const existingMock = vi
+      .spyOn(petService, "sendExistingPetEmail")
+      .mockResolvedValue();
+
+    const stream = Readable.from("dummy");
+    await processEmailMessage(stream, 1, mockProcessor);
+
+    expect(mockProcessor.checkExistingPet).toHaveBeenCalledWith("user@example.com");
+    expect(existingMock).toHaveBeenCalledWith("user@example.com");
+    expect(mockProcessor.createPet).not.toHaveBeenCalled();
+  });
 });
