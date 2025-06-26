@@ -13,6 +13,7 @@ import {
 import {
   SecretProvider,
   FirebaseSecretProvider,
+  TRAVEL_PET_LABEL,
 } from "./config";
 import {
   deletePetByEmail,
@@ -90,7 +91,7 @@ export async function checkNewEmailsAndCreatePet(
 
   return new Promise((resolve, reject) => {
     imap.once("ready", () => {
-      imap.openBox("INBOX", false, (err: Error) => {
+      imap.openBox(TRAVEL_PET_LABEL, false, (err: Error) => {
         if (err) return reject(err);
 
         imap.search(
