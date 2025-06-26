@@ -5,6 +5,7 @@ import { checkNewEmailsAndCreatePet } from "./emailService";
 import {
   generateDestinationsForAllPets,
   generateDiariesForAllPets,
+  sendDiaryEmailsForAllPets,
 } from "./diaryService";
 import { deleteExpiredPets } from "./petService";
 import { EMAIL_ADDRESS, EMAIL_APP_PASSWORD } from "./config";
@@ -54,6 +55,22 @@ export const dailyDiaryTrigger = onSchedule(
       await generateDiariesForAllPets();
     } catch (error) {
       console.error("Diary generation failed:", error);
+      throw error;
+    }
+  }
+);
+
+export const dailyDiaryEmailTrigger = onSchedule(
+  {
+    schedule: "10 9 * * *",
+    timeZone: "Asia/Tokyo",
+    secrets: [EMAIL_ADDRESS, EMAIL_APP_PASSWORD],
+  },
+  async () => {
+    try {
+      await sendDiaryEmailsForAllPets();
+    } catch (error) {
+      console.error("Diary email sending failed:", error);
       throw error;
     }
   }
@@ -119,6 +136,19 @@ export const manualDiaryGeneration = onRequest(
     } catch (error) {
       console.error("Diary generation failed:", error);
       res.status(500).send("Diary generation failed");
+    }
+  }
+);
+
+export const manualDiaryEmailSend = onRequest(
+  { secrets: [EMAIL_ADDRESS, EMAIL_APP_PASSWORD] },
+  async (_req, res) => {
+    try {
+      await sendDiaryEmailsForAllPets();
+      res.status(200).send("Diary email sending completed");
+    } catch (error) {
+      console.error("Diary email sending failed:", error);
+      res.status(500).send("Diary email sending failed");
     }
   }
 );

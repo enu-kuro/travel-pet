@@ -5,12 +5,19 @@ import { SecretProvider, FirebaseSecretProvider } from "./config";
 const ALIAS_SUFFIX = "+travel-pet";
 
 // シンプルなメール送信
+export interface EmailOptions {
+  html?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  attachments?: any[];
+}
+
 export async function sendEmail(
   to: string,
   subject: string,
   body: string,
   senderName?: string,
-  secretProvider: SecretProvider = new FirebaseSecretProvider()
+  secretProvider: SecretProvider = new FirebaseSecretProvider(),
+  options: EmailOptions = {}
 ): Promise<void> {
   const user = await secretProvider.getEmailAddress();
   const pass = await secretProvider.getEmailAppPassword();
@@ -28,6 +35,8 @@ export async function sendEmail(
     to,
     subject,
     text: body,
+    ...(options.html ? { html: options.html } : {}),
+    ...(options.attachments ? { attachments: options.attachments } : {}),
   });
 
   console.log(`Email sent to: ${to}, Subject: ${subject}`);

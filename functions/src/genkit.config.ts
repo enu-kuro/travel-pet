@@ -61,6 +61,7 @@ export const DiarySchema = ai.defineSchema(
   "DiarySchema",
   z.object({
     diary: z.string(),
+    image_prompt: z.string(),
   })
 );
 

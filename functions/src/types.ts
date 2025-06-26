@@ -12,6 +12,7 @@ export interface DiaryEntry {
   itinerary: Destination;
   diary: string;
   date: string;
+  imageUrl?: string;
 }
 
 export interface EmailProcessor {

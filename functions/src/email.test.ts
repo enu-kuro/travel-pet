@@ -97,6 +97,27 @@ describe("utils", () => {
       });
     });
 
+    it("should send email with html content", async () => {
+      const mockProvider = new MockSecretProvider();
+
+      await sendEmail(
+        "recipient@example.com",
+        "HTML Subject",
+        "Text Body",
+        undefined,
+        mockProvider,
+        { html: "<p>hi</p>" }
+      );
+
+      expect(mockSendMail).toHaveBeenCalledWith({
+        from: "test+travel-pet@example.com",
+        to: "recipient@example.com",
+        subject: "HTML Subject",
+        text: "Text Body",
+        html: "<p>hi</p>",
+      });
+    });
+
     it("should handle email sending errors", async () => {
       const mockProvider = new MockSecretProvider();
       mockSendMail.mockRejectedValueOnce(new Error("SMTP error"));
