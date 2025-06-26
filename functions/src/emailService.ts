@@ -14,6 +14,7 @@ import {
   SecretProvider,
   FirebaseSecretProvider,
 } from "./config";
+import { deletePetByEmail, sendUnsubscribeEmail } from "./petService";
 import { EmailProcessor } from "./types";
 
 export class FirestoreEmailProcessor implements EmailProcessor {
@@ -44,6 +45,7 @@ export async function processEmailMessage(
 ): Promise<void> {
   const parsed = await simpleParser(stream);
   const senderEmail = parsed.from?.value[0]?.address;
+  const subject = parsed.subject ?? "";
 
   if (!senderEmail) {
     console.log(`No sender found in message ${seqno}`);
@@ -51,6 +53,15 @@ export async function processEmailMessage(
   }
 
   console.log(`Processing email from: ${senderEmail}`);
+
+  if (subject.includes("配信停止")) {
+    console.log(`Unsubscribe request from: ${senderEmail}`);
+    const deleted = await deletePetByEmail(senderEmail);
+    if (deleted) {
+      await sendUnsubscribeEmail(senderEmail);
+    }
+    return;
+  }
 
   const petExists = await processor.checkExistingPet(senderEmail);
   if (petExists) {

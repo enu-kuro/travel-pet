@@ -74,3 +74,66 @@ describe("sendFarewellEmail", () => {
     sendEmailMock.mockRestore();
   });
 });
+
+describe("sendUnsubscribeEmail", () => {
+  it("should call sendEmail with correct subject and body", async () => {
+    const sendEmailMock = vi.spyOn(emailUtils, "sendEmail").mockResolvedValue();
+    const email = "user@example.com";
+
+    await petService.sendUnsubscribeEmail(email);
+
+    expect(sendEmailMock).toHaveBeenCalledWith(
+      email,
+      "[旅ペット配信停止完了]",
+      expect.stringContaining("配信停止")
+    );
+
+    sendEmailMock.mockRestore();
+  });
+});
+
+describe("deletePetByEmail", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("deletes pet and diaries when pet exists", async () => {
+    const diaryDeleteMock = vi.fn().mockResolvedValue(undefined);
+    const listDocumentsMock = vi.fn().mockResolvedValue([{ delete: diaryDeleteMock }]);
+    const docDeleteMock = vi.fn().mockResolvedValue(undefined);
+    const petRef = { collection: vi.fn().mockReturnValue({ listDocuments: listDocumentsMock }), delete: docDeleteMock };
+    const doc = { ref: petRef };
+
+    const getMock = vi.fn().mockResolvedValue({ empty: false, docs: [doc] });
+    const limitMock = vi.fn().mockReturnValue({ get: getMock });
+    const whereMock = vi.fn().mockReturnValue({ limit: limitMock });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.spyOn(index.db, "collection").mockReturnValue({ where: whereMock } as any);
+
+    const result = await petService.deletePetByEmail("test@example.com");
+
+    expect(result).toBe(true);
+    expect(whereMock).toHaveBeenCalledWith("email", "==", "test@example.com");
+    expect(limitMock).toHaveBeenCalledWith(1);
+    expect(getMock).toHaveBeenCalled();
+    expect(listDocumentsMock).toHaveBeenCalled();
+    expect(diaryDeleteMock).toHaveBeenCalled();
+    expect(docDeleteMock).toHaveBeenCalled();
+  });
+
+  it("returns false when no pet found", async () => {
+    const getMock = vi.fn().mockResolvedValue({ empty: true, docs: [] });
+    const limitMock = vi.fn().mockReturnValue({ get: getMock });
+    const whereMock = vi.fn().mockReturnValue({ limit: limitMock });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.spyOn(index.db, "collection").mockReturnValue({ where: whereMock } as any);
+
+    const result = await petService.deletePetByEmail("none@example.com");
+
+    expect(result).toBe(false);
+    expect(whereMock).toHaveBeenCalledWith("email", "==", "none@example.com");
+    expect(limitMock).toHaveBeenCalledWith(1);
+    expect(getMock).toHaveBeenCalled();
+  });
+});
