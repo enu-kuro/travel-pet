@@ -11,41 +11,6 @@ import {
   getDiaryFromFirestore,
 } from "./diaryHelpers";
 
-export async function generateDestinationsForAllPets(): Promise<void> {
-  const petsSnapshot = await db.collection("pets").get();
-
-  if (petsSnapshot.empty) {
-    console.log("No pets found");
-    return;
-  }
-
-  console.log(`Generating destinations for ${petsSnapshot.size} pets`);
-
-  const promises = petsSnapshot.docs.map(async (petDoc) => {
-    const petId = petDoc.id;
-    try {
-      const petData = await getPetFromFirestore(petId);
-      if (!petData) {
-        console.error(`Failed to get pet data for: ${petId}`);
-        return;
-      }
-
-      const destination = await generateDestinationFlow({
-        persona_dna: petData.profile.persona_dna,
-        date: new Date().toISOString().split("T")[0],
-      });
-
-      await saveDestinationToFirestore(petId, destination);
-
-      console.log(`Destination generated for pet: ${petId}`);
-    } catch (error) {
-      console.error(`Failed to generate destination for pet ${petId}:`, error);
-    }
-  });
-
-  await Promise.allSettled(promises);
-  console.log("Destination generation completed");
-}
 
 export async function generateDiariesForAllPets(): Promise<void> {
   const petsSnapshot = await db.collection("pets").get();

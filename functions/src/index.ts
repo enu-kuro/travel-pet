@@ -3,7 +3,6 @@ import { onSchedule } from "firebase-functions/v2/scheduler";
 
 import { checkNewEmailsAndCreatePet } from "./emailService";
 import {
-  generateDestinationsForAllPets,
   generateDiariesForAllPets,
   sendDiaryEmailsForAllPets,
 } from "./diaryService";
@@ -23,22 +22,6 @@ export const emailCheckTrigger = onSchedule(
       await checkNewEmailsAndCreatePet();
     } catch (error) {
       console.error("Email check failed:", error);
-      throw error;
-    }
-  }
-);
-
-export const dailyDestinationTrigger = onSchedule(
-  {
-    schedule: "0 9 * * *",
-    timeZone: "Asia/Tokyo",
-    secrets: [EMAIL_ADDRESS, EMAIL_APP_PASSWORD],
-  },
-  async () => {
-    try {
-      await generateDestinationsForAllPets();
-    } catch (error) {
-      console.error("Destination generation failed:", error);
       throw error;
     }
   }
@@ -110,19 +93,6 @@ export const manualEmailCheck = onRequest(
     } catch (error) {
       console.error("Email check failed:", error);
       res.status(500).send("Email check failed");
-    }
-  }
-);
-
-export const manualDestinationGeneration = onRequest(
-  { secrets: [EMAIL_ADDRESS, EMAIL_APP_PASSWORD] },
-  async (_req, res) => {
-    try {
-      await generateDestinationsForAllPets();
-      res.status(200).send("Destination generation completed");
-    } catch (error) {
-      console.error("Destination generation failed:", error);
-      res.status(500).send("Destination generation failed");
     }
   }
 );
