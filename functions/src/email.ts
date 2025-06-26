@@ -3,6 +3,7 @@ import Imap from "imap";
 import { SecretProvider, FirebaseSecretProvider } from "./config";
 
 const ALIAS_SUFFIX = "+travel-pet";
+export const ALIAS_MAILBOX = process.env.ALIAS_MAILBOX || "INBOX";
 
 // シンプルなメール送信
 export async function sendEmail(
