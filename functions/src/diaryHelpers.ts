@@ -9,7 +9,11 @@ import { Destination, PetProfileData } from "./genkit.config";
 // 分離されたFirestore読み取り関数
 export async function getPetFromFirestore(
   petId: string
-): Promise<{ email: string; profile: PetProfileData } | null> {
+): Promise<{
+  email: string;
+  profile: PetProfileData;
+  destinations?: string[];
+} | null> {
   const petDoc = await db.collection("pets").doc(petId).get();
 
   if (!petDoc.exists) {
@@ -21,6 +25,7 @@ export async function getPetFromFirestore(
   return {
     email: petData.email,
     profile: petData.profile,
+    destinations: petData.destinations,
   };
 }
 
@@ -33,7 +38,7 @@ export async function saveDestinationToFirestore(
     .doc(petId)
     .update({
       nextDestination: itinerary,
-      destinations: FieldValue.arrayUnion(itinerary),
+      destinations: FieldValue.arrayUnion(itinerary.selected_location),
     });
 
   console.log(`Destination saved to Firestore for pet: ${petId}`);

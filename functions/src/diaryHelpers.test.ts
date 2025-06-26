@@ -32,7 +32,7 @@ describe("diary helpers", () => {
       expect(result).toBeNull();
     });
 
-    it("returns email and profile when pet exists", async () => {
+    it("returns email, profile and destinations when pet exists", async () => {
       const petData = {
         email: "user@example.com",
         profile: {
@@ -47,6 +47,7 @@ describe("diary helpers", () => {
           },
           introduction: "i",
         },
+        destinations: [],
       };
       const getMock = vi.fn().mockResolvedValue({
         exists: true,
@@ -144,7 +145,10 @@ describe("diary helpers", () => {
       expect(collectionMock).toHaveBeenCalledWith("pets");
       expect(petDocMock).toHaveBeenCalledWith(petId);
       expect(updateMock).toHaveBeenCalledWith(
-        expect.objectContaining({ nextDestination: itinerary })
+        expect.objectContaining({
+          nextDestination: itinerary,
+          destinations: expect.anything(),
+        })
       );
     });
   });

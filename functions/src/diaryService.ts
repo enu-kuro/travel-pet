@@ -34,6 +34,7 @@ export async function generateDiariesForAllPets(): Promise<void> {
       const itinerary = await generateDestinationFlow({
         persona_dna: petData.profile.persona_dna,
         date: new Date().toISOString().split("T")[0],
+        past_destinations: petData.destinations ?? [],
       });
 
       await saveDestinationToFirestore(petId, itinerary);
