@@ -21,6 +21,8 @@ import {
 } from "./petService";
 import { EmailProcessor } from "./types";
 
+const MAILBOX_NAME = process.env.ALIAS_MAILBOX || "INBOX";
+
 export class FirestoreEmailProcessor implements EmailProcessor {
   constructor(private firestore: FirebaseFirestore.Firestore) {}
 
@@ -90,7 +92,7 @@ export async function checkNewEmailsAndCreatePet(
 
   return new Promise((resolve, reject) => {
     imap.once("ready", () => {
-      imap.openBox("INBOX", false, (err: Error) => {
+      imap.openBox(MAILBOX_NAME, false, (err: Error) => {
         if (err) return reject(err);
 
         imap.search(

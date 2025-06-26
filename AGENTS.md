@@ -62,6 +62,8 @@ Travel Pet digital companion service that creates virtual pets for users and sen
 Required secrets (Firebase Secret Manager):
 - `EMAIL_ADDRESS`: Gmail base address (e.g., "user@gmail.com")
 - `EMAIL_APP_PASSWORD`: Gmail App Password
+Optional env var:
+- `ALIAS_MAILBOX`: Gmail mailbox or label to read (default: `INBOX`)
 
 **Important:** Always use `+travel-pet` alias for service emails.
 
