@@ -1,12 +1,23 @@
 import { describe, it, expect, vi } from "vitest";
 import { Readable } from "stream";
-import { processEmailMessage } from "./emailService";
+import { EventEmitter } from "events";
+import {
+  processEmailMessage,
+  checkNewEmailsAndCreatePet,
+} from "./emailService";
+import { TRAVEL_PET_LABEL } from "./config";
 import * as petService from "./petService";
 import { EmailProcessor } from "./types";
 import { simpleParser } from "mailparser";
+import { getImapClient, getAliasEmailAddress } from "./email";
 
 vi.mock("mailparser", () => ({
   simpleParser: vi.fn(),
+}));
+
+vi.mock("./email", () => ({
+  getImapClient: vi.fn(),
+  getAliasEmailAddress: vi.fn(),
 }));
 
 describe("processEmailMessage", () => {
@@ -62,5 +73,44 @@ describe("processEmailMessage", () => {
     expect(mockProcessor.checkExistingPet).toHaveBeenCalledWith("user@example.com");
     expect(existingMock).toHaveBeenCalledWith("user@example.com");
     expect(mockProcessor.createPet).not.toHaveBeenCalled();
+  });
+});
+
+describe("checkNewEmailsAndCreatePet", () => {
+  it("opens Travel-Pet label", async () => {
+    interface ImapMock extends EventEmitter {
+      openBox(box: string, readOnly: boolean, cb: (e?: Error) => void): void;
+      search(criteria: unknown, cb: (e: unknown, r: number[]) => void): void;
+      fetch(): void;
+      addFlags(uids: unknown, flags: string[], cb: () => void): void;
+      end(): void;
+      connect(): void;
+    }
+
+    const openBox = vi.fn(
+      (box: string, _r: boolean, cb: (e?: Error) => void) => cb()
+    );
+    const imapMock = new EventEmitter() as ImapMock;
+    imapMock.openBox = openBox;
+    imapMock.search = vi.fn((_: unknown, cb: (e: null, r: number[]) => void) =>
+      cb(null, [])
+    );
+    imapMock.fetch = vi.fn();
+    imapMock.addFlags = vi.fn((_: unknown, __: string[], cb: () => void) => cb());
+    imapMock.end = vi.fn();
+    imapMock.connect = () => imapMock.emit("ready");
+    imapMock.once = imapMock.on.bind(imapMock);
+
+    vi.mocked(getImapClient).mockResolvedValue(imapMock);
+    vi.mocked(getAliasEmailAddress).mockResolvedValue("alias@example.com");
+
+    const processor: EmailProcessor = {
+      checkExistingPet: vi.fn().mockResolvedValue(false),
+      createPet: vi.fn().mockResolvedValue(),
+    };
+
+    await checkNewEmailsAndCreatePet(undefined, processor);
+
+    expect(openBox).toHaveBeenCalledWith(TRAVEL_PET_LABEL, false, expect.any(Function));
   });
 });
