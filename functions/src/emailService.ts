@@ -14,7 +14,11 @@ import {
   SecretProvider,
   FirebaseSecretProvider,
 } from "./config";
-import { deletePetByEmail, sendUnsubscribeEmail } from "./petService";
+import {
+  deletePetByEmail,
+  sendUnsubscribeEmail,
+  sendExistingPetEmail,
+} from "./petService";
 import { EmailProcessor } from "./types";
 
 export class FirestoreEmailProcessor implements EmailProcessor {
@@ -66,6 +70,7 @@ export async function processEmailMessage(
   const petExists = await processor.checkExistingPet(senderEmail);
   if (petExists) {
     console.log(`Pet already exists for ${senderEmail}`);
+    await sendExistingPetEmail(senderEmail);
     return;
   }
 

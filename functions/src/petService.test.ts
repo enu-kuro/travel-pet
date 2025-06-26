@@ -92,6 +92,23 @@ describe("sendUnsubscribeEmail", () => {
   });
 });
 
+describe("sendExistingPetEmail", () => {
+  it("should call sendEmail with notice subject", async () => {
+    const sendEmailMock = vi.spyOn(emailUtils, "sendEmail").mockResolvedValue();
+    const email = "user@example.com";
+
+    await petService.sendExistingPetEmail(email);
+
+    expect(sendEmailMock).toHaveBeenCalledWith(
+      email,
+      "[旅ペット登録済み]",
+      expect.stringContaining("登録されています")
+    );
+
+    sendEmailMock.mockRestore();
+  });
+});
+
 describe("deletePetByEmail", () => {
   beforeEach(() => {
     vi.clearAllMocks();

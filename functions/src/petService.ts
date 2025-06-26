@@ -30,6 +30,18 @@ export async function sendUnsubscribeEmail(email: string): Promise<void> {
   console.log(`Unsubscribe confirmation sent to: ${email}`);
 }
 
+export async function sendExistingPetEmail(email: string): Promise<void> {
+  const subject = "[旅ペット登録済み]";
+  const body = `
+こんにちは！
+
+既に旅ペットを登録されています。\n引き続き旅をお楽しみください！\n\n旅ペットチーム
+`;
+
+  await sendEmail(email, subject, body);
+  console.log(`Existing pet notice sent to: ${email}`);
+}
+
 // Delete pets whose lifetime exceeds PET_LIFESPAN_DAYS
 export async function deleteExpiredPets(): Promise<void> {
   const petsSnapshot = await db.collection("pets").get();
