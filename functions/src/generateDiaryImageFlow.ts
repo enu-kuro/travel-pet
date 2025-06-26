@@ -4,7 +4,7 @@ import { z } from "zod";
 
 const DiaryImageInputSchema = ai.defineSchema(
   "DiaryImageInput",
-  z.object({ diary: z.string() })
+  z.object({ prompt: z.string() })
 );
 
 export const DiaryImageOutputSchema = ai.defineSchema(
@@ -21,7 +21,7 @@ export const generateDiaryImageFlow = ai.defineFlow(
   async (input) => {
     const result = await ai.generate({
       model: vertexAI.model("imagen-4.0-fast-generate-preview-06-06"),
-      prompt: `${input.diary}\n\n上記の日記を絵日記風に描いた画像を生成してください。`,
+      prompt: input.prompt,
       output: { format: "media" },
     });
 

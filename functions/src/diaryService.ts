@@ -79,7 +79,7 @@ export async function generateDiariesForAllPets(): Promise<void> {
       });
 
       const imageResult = await generateDiaryImageFlow({
-        diary: diaryResult.diary,
+        prompt: diaryResult.image_prompt,
       });
 
       const today = new Date().toISOString().split("T")[0];
