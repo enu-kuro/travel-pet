@@ -55,13 +55,15 @@ export async function getDestinationFromFirestore(
 export async function saveDiaryToFirestore(
   petId: string,
   itinerary: Destination,
-  diary: string
+  diary: string,
+  imageUrl?: string
 ): Promise<void> {
   const today = new Date().toISOString().split("T")[0];
   const diaryEntry: DiaryEntry = {
     itinerary: itinerary,
     diary: diary,
     date: today,
+    imageUrl,
   };
 
   await db
@@ -78,7 +80,8 @@ export async function saveDiaryToFirestore(
 export async function sendDiaryEmail(
   email: string,
   itinerary: Destination,
-  diary: string
+  diary: string,
+  imageUrl?: string
 ): Promise<void> {
   const location = itinerary.selected_location ?? "";
   const subject = `[旅日記] ${location}`;
@@ -94,6 +97,11 @@ ${diary}
 あなたの旅ペットより
 `;
 
-  await sendEmail(email, subject, body);
+  let htmlBody: string | undefined;
+  if (imageUrl) {
+    htmlBody = `<p>こんにちは！</p><p>今日の旅日記をお届けします📖</p><p>${diary.replace(/\n/g, "<br>")}</p><img src="${imageUrl}" alt="diary image"/><p>それでは、また明日の冒険をお楽しみに！</p><p>あなたの旅ペットより</p>`;
+  }
+
+  await sendEmail(email, subject, body, undefined, undefined, { html: htmlBody });
   console.log(`Diary email sent to: ${email} for ${location}`);
 }

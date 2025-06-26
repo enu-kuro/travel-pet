@@ -83,6 +83,7 @@ describe("diary helpers", () => {
         local_details: "l",
       };
       const diary = "Today I visited temples.";
+      const imageUrl = "data:image/png;base64,test";
       const petId = "pet123";
       const today = new Date().toISOString().split("T")[0];
 
@@ -101,13 +102,18 @@ describe("diary helpers", () => {
         collectionMock as any
       );
 
-      await saveDiaryToFirestore(petId, itinerary, diary);
+      await saveDiaryToFirestore(petId, itinerary, diary, imageUrl);
 
       expect(collectionMock).toHaveBeenCalledWith("pets");
       expect(petDocRefMock).toHaveBeenCalledWith(petId);
       expect(diariesCollectionMock).toHaveBeenCalledWith("diaries");
       expect(diaryDocMock).toHaveBeenCalledWith(today);
-      expect(setMock).toHaveBeenCalledWith({ itinerary, diary, date: today });
+      expect(setMock).toHaveBeenCalledWith({
+        itinerary,
+        diary,
+        date: today,
+        imageUrl,
+      });
     });
   });
 
@@ -167,7 +173,36 @@ describe("diary helpers", () => {
       expect(sendEmailMock).toHaveBeenCalledWith(
         email,
         "[旅日記] Kyoto",
-        expect.stringContaining(diary)
+        expect.stringContaining(diary),
+        undefined,
+        undefined,
+        { html: undefined }
+      );
+
+      sendEmailMock.mockRestore();
+    });
+
+    it("includes html when imageUrl provided", async () => {
+      const sendEmailMock = vi.spyOn(emailUtils, "sendEmail").mockResolvedValue();
+      const email = "user@example.com";
+      const itinerary = {
+        selected_location: "Kyoto",
+        summary: "s",
+        news_context: "n",
+        local_details: "l",
+      };
+      const diary = "I saw temples.";
+      const imageUrl = "data:image/png;base64,test";
+
+      await sendDiaryEmail(email, itinerary, diary, imageUrl);
+
+      expect(sendEmailMock).toHaveBeenCalledWith(
+        email,
+        "[旅日記] Kyoto",
+        expect.stringContaining(diary),
+        undefined,
+        undefined,
+        { html: expect.stringContaining(imageUrl) }
       );
 
       sendEmailMock.mockRestore();

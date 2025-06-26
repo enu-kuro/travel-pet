@@ -1,6 +1,7 @@
 import { db } from "./firebase";
 import { generateDestinationFlow } from "./generateDestinationFlow";
 import { generateDiaryFlow } from "./generateDiaryFlow";
+import { generateDiaryImageFlow } from "./generateDiaryImageFlow";
 import {
   getPetFromFirestore,
   saveDestinationToFirestore,
@@ -75,8 +76,22 @@ export async function generateDiariesForAllPets(): Promise<void> {
         travel_material: itinerary,
       });
 
-      await saveDiaryToFirestore(petId, itinerary, diaryResult.diary);
-      await sendDiaryEmail(petData.email, itinerary, diaryResult.diary);
+      const imageResult = await generateDiaryImageFlow({
+        diary: diaryResult.diary,
+      });
+
+      await saveDiaryToFirestore(
+        petId,
+        itinerary,
+        diaryResult.diary,
+        imageResult.url
+      );
+      await sendDiaryEmail(
+        petData.email,
+        itinerary,
+        diaryResult.diary,
+        imageResult.url
+      );
 
       console.log(`Diary generated for pet: ${petId}`);
     } catch (error) {
