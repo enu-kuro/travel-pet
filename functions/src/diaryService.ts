@@ -8,6 +8,8 @@ import {
   getDestinationFromFirestore,
   saveDiaryToFirestore,
   sendDiaryEmail,
+  saveImageToStorage,
+  getDiaryFromFirestore,
 } from "./diaryHelpers";
 
 export async function generateDestinationsForAllPets(): Promise<void> {
@@ -80,17 +82,14 @@ export async function generateDiariesForAllPets(): Promise<void> {
         diary: diaryResult.diary,
       });
 
+      const today = new Date().toISOString().split("T")[0];
+      const storedUrl = await saveImageToStorage(imageResult.url, petId, today);
+
       await saveDiaryToFirestore(
         petId,
         itinerary,
         diaryResult.diary,
-        imageResult.url
-      );
-      await sendDiaryEmail(
-        petData.email,
-        itinerary,
-        diaryResult.diary,
-        imageResult.url
+        storedUrl
       );
 
       console.log(`Diary generated for pet: ${petId}`);
@@ -101,4 +100,47 @@ export async function generateDiariesForAllPets(): Promise<void> {
 
   await Promise.allSettled(promises);
   console.log("Diary generation completed");
+}
+
+export async function sendDiaryEmailsForAllPets(): Promise<void> {
+  const petsSnapshot = await db.collection("pets").get();
+
+  if (petsSnapshot.empty) {
+    console.log("No pets found");
+    return;
+  }
+
+  const today = new Date().toISOString().split("T")[0];
+  console.log(`Sending diary emails for ${petsSnapshot.size} pets`);
+
+  const promises = petsSnapshot.docs.map(async (petDoc) => {
+    const petId = petDoc.id;
+    try {
+      const petData = await getPetFromFirestore(petId);
+      if (!petData) {
+        console.error(`Failed to get pet data for: ${petId}`);
+        return;
+      }
+
+      const diaryEntry = await getDiaryFromFirestore(petId, today);
+      if (!diaryEntry) {
+        console.error(`Diary not found for pet ${petId}`);
+        return;
+      }
+
+      await sendDiaryEmail(
+        petData.email,
+        diaryEntry.itinerary,
+        diaryEntry.diary,
+        diaryEntry.imageUrl
+      );
+
+      console.log(`Diary email sent for pet: ${petId}`);
+    } catch (error) {
+      console.error(`Failed to send diary email for pet ${petId}:`, error);
+    }
+  });
+
+  await Promise.allSettled(promises);
+  console.log("Diary email sending completed");
 }

@@ -2,6 +2,7 @@ import { sendEmail } from "./email";
 import { PetProfile, DiaryEntry } from "./types";
 import { db } from "./firebase";
 import { FieldValue } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
 import { Destination, PetProfileData } from "./genkit.config";
 
 
@@ -51,6 +52,24 @@ export async function getDestinationFromFirestore(
   return data.nextDestination ?? null;
 }
 
+export async function saveImageToStorage(
+  dataUrl: string,
+  petId: string,
+  date: string
+): Promise<string> {
+  const bucket = getStorage().bucket();
+  const base64 = dataUrl.split(",", 2)[1];
+  const buffer = Buffer.from(base64, "base64");
+  const filePath = `diaryImages/${petId}/${date}.png`;
+  const file = bucket.file(filePath);
+  await file.save(buffer, { contentType: "image/png" });
+  const [url] = await file.getSignedUrl({
+    action: "read",
+    expires: Date.now() + 365 * 24 * 60 * 60 * 1000,
+  });
+  return url;
+}
+
 // 分離されたFirestore保存関数
 export async function saveDiaryToFirestore(
   petId: string,
@@ -74,6 +93,24 @@ export async function saveDiaryToFirestore(
     .set(diaryEntry);
 
   console.log(`Diary saved to Firestore for pet: ${petId}`);
+}
+
+export async function getDiaryFromFirestore(
+  petId: string,
+  date: string
+): Promise<DiaryEntry | null> {
+  const doc = await db
+    .collection("pets")
+    .doc(petId)
+    .collection("diaries")
+    .doc(date)
+    .get();
+
+  if (!doc.exists) {
+    return null;
+  }
+
+  return doc.data() as DiaryEntry;
 }
 
 // 分離されたメール送信関数
