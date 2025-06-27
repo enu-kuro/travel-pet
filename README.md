@@ -44,10 +44,8 @@ Firebaseを中心としたサーバーレス構成により、スケーラビリ
 
 ## 📊 システム構成図
 
-このリポジトリの [`systemDiagram.puml`](systemDiagram.puml) に、
-Travel Pet サービスのシステム構成図を PlantUML 形式で保存しています。
-PlantUML でレンダリングすることで、メール送信から日記生成までの
-フローを俯瞰できます。
+![システム構成図](./systemDiagram.svg)
+
 
 ## 🛠️ セットアップと実行方法
 
@@ -110,7 +108,7 @@ npm run deploy
     - 毎日、Cloud Schedulerがこのフローをトリガー。
     - [`generateDiariesForAllPets`](functions/src/diaryService.ts#L15-L67) が実行され、各ペットに対して以下の処理を行う:
         - [`generateDestinationFlow`](functions/src/generateDestinationFlow.ts) でGeminiがランダムな旅先を生成。
-        - [`generateDiaryFlow`](functions/src/generateDiaryFlow.ts) でGeminiが日記の文章を、Imagenが画像を生成。
+        - [`generateDiaryFlow`](functions/src/generateDiaryFlow.ts) でGeminiが日記の文章を、[`generateDiaryImageFlow`](functions/src/generateDiaryImageFlow.ts)でImagenが画像を生成。
     - 生成された日記データはFirestoreに保存される。
 
 3.  **日記のメール送信 ([`dailyDiaryEmailTrigger`](functions/src/index.ts#L46-L60))**:

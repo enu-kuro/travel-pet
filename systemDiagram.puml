@@ -1,45 +1,90 @@
 @startuml
-actor ユーザー
-cloud Gmail
-queue CloudScheduler
-frame "Cloud Functions" {
-  [Email Check Trigger]
-  [Create Pet Flow]
-  [Daily Diary Trigger]
-  [Generate Destination Flow]
-  [Generate Diary Flow]
-  [Generate Diary Image Flow]
-  [Daily Diary Email Trigger]
-  [Daily Pet Cleanup]
+'=== 全体設定 ===
+title [旅するデジタルペット – たびぺっち] システム構成図
+!theme vibrant
+top to bottom direction
+skinparam {
+    DefaultFontName "Yu Gothic UI"
+    DefaultFontSize 13
+    padding 5
+    Nodesep 60
+    Ranksep 80
+    shadowing false
+    roundCorner 5
+    actorBorderColor #2C3E50
+    actorBackgroundColor #F8F9FA
+    databaseBackgroundColor #FFF3CD
+    cloudBackgroundColor #E3F2FD
+    queueBackgroundColor #E8F5E8
+    queueFontColor #2C3E50
+    frame {
+      BorderColor #495057
+      BackgroundColor #FAFBFC
+    }
+    arrow {
+      Color #495057
+    }
 }
-database Firestore
-cloud "Cloud Storage"
-cloud "Vertex AI (Gemini/Imagen)" as VertexAI
 
-ユーザー --> Gmail : +travel-pet 宛てにメール送信
-CloudScheduler --> [Email Check Trigger]
-[Email Check Trigger] --> Gmail : IMAPで新規メール確認
-[Email Check Trigger] --> [Create Pet Flow]
-[Create Pet Flow] --> VertexAI : プロフィール生成
-[Create Pet Flow] --> Firestore : ペット情報保存
-[Create Pet Flow] --> Gmail : 登録完了メール送信
+'=== コンポーネント定義 ===
+actor "ユーザー" as User
+cloud "Gmail" as Gmail #FFEBEE
 
-CloudScheduler --> [Daily Diary Trigger]
-[Daily Diary Trigger] --> [Generate Destination Flow]
-[Generate Destination Flow] --> VertexAI
-[Generate Destination Flow] --> Firestore
-[Daily Diary Trigger] --> [Generate Diary Flow]
-[Generate Diary Flow] --> VertexAI
-[Generate Diary Flow] --> [Generate Diary Image Flow]
-[Generate Diary Image Flow] --> VertexAI
-[Generate Diary Image Flow] --> "Cloud Storage" : 画像保存
-[Generate Diary Flow] --> Firestore : 日記保存
+package "Google Cloud" #EDF2FF {
+    queue "Cloud Scheduler" as CloudScheduler
+    database "Firestore" as Firestore
+    cloud "Cloud Storage\n(Resize Images)" as CloudStorage #E8F5E8
+    cloud "Vertex AI\n(Gemini/Imagen)" as VertexAI #F3E8FF
 
-CloudScheduler --> [Daily Diary Email Trigger]
-[Daily Diary Email Trigger] --> Gmail : 日記メール送信
-[Daily Diary Email Trigger] --> Firestore
+    frame "Cloud Functions" #F7F9FC {
+        [Email Check Trigger] as EmailCheck #FFF0F0
+        [Create Pet Flow] as CreatePet #FFF0F0
+        [Daily Diary Trigger] as DiaryTrigger #EDF5FF
 
-CloudScheduler --> [Daily Pet Cleanup]
-[Daily Pet Cleanup] --> Firestore : 期限切れペット削除
-[Daily Pet Cleanup] --> Gmail : さよならメール送信
+        rectangle "Generate Diaries" #E0EFFF {
+            [Generate Destination Flow] as GenerateDestination #EDF5FF
+            [Generate Diary Flow]       as GenerateDiary #EDF5FF
+            [Generate Diary Image Flow] as GenerateDiaryImage #EDF5FF
+        }
+
+        [Daily Diary Email Trigger] as DiaryEmail #EFFFEF
+        [Daily Pet Cleanup]        as Cleanup #FFF9E6
+    }
+}
+
+'=== フロー定義 ===
+User -[#DC3545,bold]-> Gmail : <color:#DC3545>travel-pet宛にメール送信</color>
+CloudScheduler -[#DC3545,bold]-> EmailCheck
+EmailCheck -[#DC3545,bold]-> CreatePet : <color:#DC3545>登録処理開始</color>
+CreatePet -[#DC3545,bold]-> VertexAI : <color:#DC3545>プロフィール生成 (Gemini)</color>
+CreatePet -[#DC3545,bold]-> Firestore : <color:#DC3545>ペット情報保存</color>
+CreatePet -[#DC3545,bold]-> Gmail : <color:#DC3545>登録完了メール送信</color>
+
+CloudScheduler -[#0D6EFD,bold]-> DiaryTrigger
+DiaryTrigger -[#0D6EFD,bold]-> GenerateDestination : <color:#0D6EFD>全ペットの日記生成開始</color>
+GenerateDestination -[#0D6EFD,bold]-> VertexAI : <color:#0D6EFD>旅先生成 (Gemini)</color>
+GenerateDestination -[#0D6EFD,bold]-> Firestore : <color:#0D6EFD>旅先保存</color>
+GenerateDestination -[#0D6EFD,bold]-> GenerateDiary : <color:#0D6EFD>日記テキスト生成へ</color>
+GenerateDiary -[#0D6EFD,bold]-> VertexAI : <color:#0D6EFD>日記テキスト生成 (Gemini)</color>
+GenerateDiary -[#0D6EFD,bold]-> Firestore : <color:#0D6EFD>日記保存</color>
+GenerateDiary -[#0D6EFD,bold]-> GenerateDiaryImage : <color:#0D6EFD>日記画像生成へ</color>
+GenerateDiaryImage -[#0D6EFD,bold]-> VertexAI : <color:#0D6EFD>日記画像生成 (Imagen)</color>
+GenerateDiaryImage -[#0D6EFD,bold]-> CloudStorage : <color:#0D6EFD>画像保存</color>
+
+CloudScheduler -[#198754,bold]-> DiaryEmail
+Firestore -[#198754,bold]-> DiaryEmail : <color:#198754>日記データ取得</color>
+DiaryEmail -[#198754,bold]-> Gmail : <color:#198754>日記メール送信</color>
+
+CloudScheduler -[#F39C12,bold]-> Cleanup
+Cleanup -[#F39C12,bold]-> Firestore : <color:#F39C12>期限切れペット削除</color>
+Cleanup -[#F39C12,bold]-> Gmail : <color:#F39C12>削除通知メール送信</color>
+
+Gmail -> User : メール受信
+
+legend right
+  <font color=#DC3545><b>タスク1：</b></font> ペット登録
+  <font color=#0D6EFD><b>タスク2：</b></font> 日記生成
+  <font color=#198754><b>タスク3：</b></font> 日記メール送信
+  <font color=#F39C12><b>タスク4：</b></font> クリーンアップ
+endlegend
 @enduml
