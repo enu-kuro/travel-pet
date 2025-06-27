@@ -5,7 +5,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { Destination, PetProfileData } from "./genkit.config";
 
-// 分離されたFirestore読み取り関数
+// Retrieve basic pet data from Firestore
 export async function getPetFromFirestore(petId: string): Promise<{
   email: string;
   profile: PetProfileData;
@@ -65,7 +65,7 @@ export async function saveImageToStorage(
   return `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedResizedPath}?alt=media`;
 }
 
-// 分離されたFirestore保存関数
+// Store the generated diary entry in Firestore
 export async function saveDiaryToFirestore(
   petId: string,
   itinerary: Destination,
@@ -108,7 +108,7 @@ export async function getDiaryFromFirestore(
   return doc.data() as DiaryEntry;
 }
 
-// 分離されたメール送信関数
+// Send the daily diary email to the pet owner
 export async function sendDiaryEmail(
   email: string,
   itinerary: Destination,

@@ -42,7 +42,7 @@ export const createPetFlow = ai.defineFlow(
   }
 );
 
-// 分離されたFirestore保存関数
+// Save the new pet profile in Firestore
 export async function savePetToFirestore(
   email: string,
   profile: PetProfileData
@@ -63,7 +63,7 @@ export async function savePetToFirestore(
   return petId;
 }
 
-// 分離されたメール送信関数
+// Send the welcome email after pet creation
 export async function sendPetCreationEmail(
   email: string,
   profile: PetProfileData
