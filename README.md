@@ -1,3 +1,8 @@
+
+"## 🛠️ セットアップと実行方法"にgmailでapp passwordを使う方法が抜けています。
+簡潔に記載できますか？
+
+```
 # Travel Pet - 旅するデジタルペット「たびぺっち」
 
 あなたのメールに届く、ちいさな世界の旅。
@@ -52,6 +57,10 @@ Firebaseを中心としたサーバーレス構成により、スケーラビリ
 ### 前提条件
 Firebaseプロジェクトの設定はできているものとします。
 
+### Gmailアプリパスワードの取得
+このプロジェクトでは、IMAP/Nodemailerによるメールの送受信にGmailアカウントを使用します。
+**アプリパスワード**を取得して`EMAIL_APP_PASSWORD`に設定する必要があります。
+
 ### 1. 環境構築
 ```bash
 # 1. リポジトリをクローン
@@ -98,7 +107,7 @@ npm run deploy
 ## 📜 主な処理フロー
 
 1.  **ペットの誕生 ([`emailCheckTrigger`](functions/src/index.ts#L14-L28))**:
-    - ユーザーが `your-email+travel-pet@gmail.com` にメールを送信。
+    - ユーザーが `[your-email]+travel-pet@gmail.com` にメールを送信。
     - Cloud Schedulerで`emailCheckTrigger`をトリガーすることで、IMAPでメールを定期的に検知。（10分間隔）
     - [`createPetFlow`](functions/src/createPetFlow.ts) が実行され、Geminiがペットのプロフィールを生成。
     - Firestoreにペットのデータが保存される。
@@ -118,3 +127,5 @@ npm run deploy
 4.  **ペットのクリーンアップ ([`dailyPetCleanup`](functions/src/index.ts#L62-L75))**:
     - 毎日、Cloud Schedulerがこのフローをトリガー。（午前3時30分）
     - [`deleteExpiredPets`](functions/src/petService.ts#L46-L74) が実行され、寿命に達したペットデータを削除する。
+
+```
