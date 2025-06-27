@@ -3,6 +3,21 @@
 ## 📘 Project Overview
 Travel Pet digital companion service that creates virtual pets for users and sends daily travel diary emails.
 
+### 旅するデジタルペット – たびぺっち
+あなたのメールに届く、ちいさな世界の旅。
+
+知らない世界に、出会っていますか？
+
+「たびぺっち」は、あなたのもとに毎日1通、小さな旅日記を届けるデジタルペットです。
+ペットは気まぐれに世界を巡り、観光地だけでなく、誰も知らない村や、その日に話題になった遠い国の出来事、静かな港町の朝など、思いもよらない景色や物語をメールで教えてくれます。
+
+日々の情報が自分好みに並ぶ時代だからこそ、
+「たびぺっち」は、あなたが普段出会えない場所・文化・出来事を、“ゆるいノイズ”としてそっと届けます。
+見慣れた毎日に、ちょっとだけ新しい視点と驚きを。
+忙しいあなたの心に、小さな冒険と癒しを。
+
+さあ、メールボックスで世界を旅する日々をはじめましょう。
+
 **Core Features:**
 - Pet creation via email to alias address
 - Daily AI-generated travel diary emails
