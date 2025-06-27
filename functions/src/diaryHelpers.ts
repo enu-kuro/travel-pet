@@ -118,24 +118,26 @@ export async function sendDiaryEmail(
   const location = itinerary.selected_location ?? "";
   const subject = `[旅日記] ${location}`;
   const body = `
-こんにちは！
+こんにちは、たびぺっち運営チームです。
 
-今日の旅日記をお届けします📖
+あなたの旅ペットから本日の旅の便りが届きました。
+${location ? `今回は「${location}」を訪れています。` : ""}
 
 ${diary}
 
-それでは、また明日の冒険をお楽しみに！
+明日はどんな景色を見せてくれるのでしょうか。
+楽しみにお待ちください。
 
-あなたの旅ペットより
+旅するデジタルペット『たびぺっち』チーム
 `;
 
-  let htmlBody: string | undefined;
-  if (imageUrl) {
-    htmlBody = `<p>こんにちは！</p><p>今日の旅日記をお届けします📖</p><p>${diary.replace(
-      /\n/g,
-      "<br>"
-    )}</p><img src="${imageUrl}" alt="diary image"/><p>それでは、また明日の冒険をお楽しみに！</p><p>あなたの旅ペットより</p>`;
-  }
+  const locationLine = location ? `<p>今回は「${location}」を訪れています。</p>` : "";
+  const imageTag = imageUrl ? `<img src="${imageUrl}" alt="diary image"/>` : "";
+  // eslint-disable-next-line quotes
+  const htmlBody = `<p>こんにちは、たびぺっち運営チームです。</p><p>あなたの旅ペットから本日の旅の便りが届きました。</p>${locationLine}<p>${diary.replace(
+    /\n/g,
+    "<br>"
+  )}</p>${imageTag}<p>明日はどんな景色を見せてくれるのでしょうか。<br>楽しみにお待ちください。</p><p>旅するデジタルペット『たびぺっち』チーム</p>`;
 
   await sendEmail(email, subject, body, undefined, undefined, {
     html: htmlBody,

@@ -177,7 +177,7 @@ describe("diary helpers", () => {
         expect.stringContaining(diary),
         undefined,
         undefined,
-        { html: undefined }
+        { html: expect.stringContaining(diary) }
       );
 
       sendEmailMock.mockRestore();

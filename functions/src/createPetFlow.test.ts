@@ -70,7 +70,10 @@ describe("createPetFlow helpers", () => {
       expect(sendEmailMock).toHaveBeenCalledWith(
         email,
         "[旅ペット作成完了]",
-        expect.stringContaining(JSON.stringify(profile))
+        expect.stringContaining(profile.name),
+        undefined,
+        undefined,
+        { html: expect.stringContaining(profile.name) }
       );
 
       sendEmailMock.mockRestore();
