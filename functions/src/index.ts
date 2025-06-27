@@ -13,7 +13,7 @@ export { db } from "./firebase";
 
 export const emailCheckTrigger = onSchedule(
   {
-    schedule: "*/10 * * * *",
+    schedule: "*/10 * * * *", // every 10 minutes
     timeZone: "Asia/Tokyo",
     secrets: [EMAIL_ADDRESS, EMAIL_APP_PASSWORD],
   },
@@ -29,7 +29,7 @@ export const emailCheckTrigger = onSchedule(
 
 export const dailyDiaryTrigger = onSchedule(
   {
-    schedule: "5 9 * * *",
+    schedule: "30 5 * * *", // every day at 05:30 JST
     timeZone: "Asia/Tokyo",
     secrets: [EMAIL_ADDRESS, EMAIL_APP_PASSWORD],
   },
@@ -45,7 +45,7 @@ export const dailyDiaryTrigger = onSchedule(
 
 export const dailyDiaryEmailTrigger = onSchedule(
   {
-    schedule: "10 9 * * *",
+    schedule: "0 6 * * *", // every day at 06:00 JST
     timeZone: "Asia/Tokyo",
     secrets: [EMAIL_ADDRESS, EMAIL_APP_PASSWORD],
   },
@@ -61,7 +61,7 @@ export const dailyDiaryEmailTrigger = onSchedule(
 
 export const dailyPetCleanup = onSchedule(
   {
-    schedule: "30 3 * * *",
+    schedule: "30 3 * * *", // every day at 03:30 JST
     timeZone: "Asia/Tokyo",
   },
   async () => {
