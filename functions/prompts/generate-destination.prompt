@@ -58,7 +58,7 @@ past_destinations(The array ends with the most recent visit): {{json past_destin
 
 # 出力形式（Strict JSON）
 {
-  "selected_location": "（国・町・村・スポット・現象など、旅の主役になる場所や話題の名前）",
+  "selected_location": "国・町・村・スポット・現象など、旅の主役になる場所や話題の名前（必ず日本語で記載してください）",
   "summary": "どんな出来事・スポットか一目で分かる要約（2～3文）",
   "news_context": "なぜ今この話題なのか？現地で直近1週間以内に起きた出来事や背景（2～3文）",
   "local_details": "その場所・出来事にまつわる豆知識、文化的背景、風景描写、現地の人や動物の様子、五感に残るような情景（3文以上）"

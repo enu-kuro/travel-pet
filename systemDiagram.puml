@@ -1,0 +1,45 @@
+@startuml
+actor ユーザー
+cloud Gmail
+queue CloudScheduler
+frame "Cloud Functions" {
+  [Email Check Trigger]
+  [Create Pet Flow]
+  [Daily Diary Trigger]
+  [Generate Destination Flow]
+  [Generate Diary Flow]
+  [Generate Diary Image Flow]
+  [Daily Diary Email Trigger]
+  [Daily Pet Cleanup]
+}
+database Firestore
+cloud "Cloud Storage"
+cloud "Vertex AI (Gemini/Imagen)" as VertexAI
+
+ユーザー --> Gmail : +travel-pet 宛てにメール送信
+CloudScheduler --> [Email Check Trigger]
+[Email Check Trigger] --> Gmail : IMAPで新規メール確認
+[Email Check Trigger] --> [Create Pet Flow]
+[Create Pet Flow] --> VertexAI : プロフィール生成
+[Create Pet Flow] --> Firestore : ペット情報保存
+[Create Pet Flow] --> Gmail : 登録完了メール送信
+
+CloudScheduler --> [Daily Diary Trigger]
+[Daily Diary Trigger] --> [Generate Destination Flow]
+[Generate Destination Flow] --> VertexAI
+[Generate Destination Flow] --> Firestore
+[Daily Diary Trigger] --> [Generate Diary Flow]
+[Generate Diary Flow] --> VertexAI
+[Generate Diary Flow] --> [Generate Diary Image Flow]
+[Generate Diary Image Flow] --> VertexAI
+[Generate Diary Image Flow] --> "Cloud Storage" : 画像保存
+[Generate Diary Flow] --> Firestore : 日記保存
+
+CloudScheduler --> [Daily Diary Email Trigger]
+[Daily Diary Email Trigger] --> Gmail : 日記メール送信
+[Daily Diary Email Trigger] --> Firestore
+
+CloudScheduler --> [Daily Pet Cleanup]
+[Daily Pet Cleanup] --> Firestore : 期限切れペット削除
+[Daily Pet Cleanup] --> Gmail : さよならメール送信
+@enduml
