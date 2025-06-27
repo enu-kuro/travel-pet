@@ -53,7 +53,10 @@ describe("deleteExpiredPets", () => {
     expect(sendEmailMock).toHaveBeenCalledWith(
       oldPet.data().email,
       "[旅ペットとのお別れ]",
-      expect.any(String)
+      expect.any(String),
+      undefined,
+      undefined,
+      { html: expect.any(String) }
     );
   });
 });
@@ -68,7 +71,10 @@ describe("sendFarewellEmail", () => {
     expect(sendEmailMock).toHaveBeenCalledWith(
       email,
       "[旅ペットとのお別れ]",
-      expect.stringContaining("冒険は終了")
+      expect.stringContaining("冒険は終了"),
+      undefined,
+      undefined,
+      { html: expect.any(String) }
     );
 
     sendEmailMock.mockRestore();
@@ -85,7 +91,10 @@ describe("sendUnsubscribeEmail", () => {
     expect(sendEmailMock).toHaveBeenCalledWith(
       email,
       "[旅ペット配信停止完了]",
-      expect.stringContaining("配信停止")
+      expect.stringContaining("配信停止"),
+      undefined,
+      undefined,
+      { html: expect.any(String) }
     );
 
     sendEmailMock.mockRestore();
@@ -102,7 +111,10 @@ describe("sendExistingPetEmail", () => {
     expect(sendEmailMock).toHaveBeenCalledWith(
       email,
       "[旅ペット登録済み]",
-      expect.stringContaining("登録されています")
+      expect.stringContaining("登録されています"),
+      undefined,
+      undefined,
+      { html: expect.any(String) }
     );
 
     sendEmailMock.mockRestore();

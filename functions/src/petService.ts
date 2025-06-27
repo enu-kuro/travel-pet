@@ -6,39 +6,56 @@ import { sendEmail } from "./email";
 export async function sendFarewellEmail(email: string): Promise<void> {
   const subject = "[旅ペットとのお別れ]";
   const body = `
-こんにちは！
+こんにちは、たびぺっち運営チームです。
 
-あなたの旅ペットとの冒険は終了しました。
-今まで一緒に旅をしていただき、ありがとうございました。
+長い間ご一緒いただいた旅ペットとの冒険は終了しました。
+これまで一緒に旅をしていただき、心より感謝申し上げます。
 
-旅ペットチーム
+またお会いできる日を楽しみにしております。
+
+旅するデジタルペット『たびぺっち』チーム
 `;
 
-  await sendEmail(email, subject, body);
+  // eslint-disable-next-line quotes
+  const htmlBody = `<p>こんにちは、たびぺっち運営チームです。</p><p>長い間ご一緒いただいた旅ペットとの冒険は終了しました。<br>これまで一緒に旅をしていただき、心より感謝申し上げます。</p><p>またお会いできる日を楽しみにしております。</p><p>旅するデジタルペット『たびぺっち』チーム</p>`;
+
+  await sendEmail(email, subject, body, undefined, undefined, { html: htmlBody });
   console.log(`Farewell email sent to: ${email}`);
 }
 
 export async function sendUnsubscribeEmail(email: string): Promise<void> {
   const subject = "[旅ペット配信停止完了]";
   const body = `
-こんにちは！
+こんにちは、たびぺっち運営チームです。
 
-旅ペットの配信停止を承りました。\n今までご利用いただき、ありがとうございました。\n\n旅ペットチーム
+旅ペットの配信停止を承りました。
+これまでサービスをご利用いただき、誠にありがとうございました。
+
+旅するデジタルペット『たびぺっち』チーム
 `;
 
-  await sendEmail(email, subject, body);
+  // eslint-disable-next-line quotes
+  const htmlBody = `<p>こんにちは、たびぺっち運営チームです。</p><p>旅ペットの配信停止を承りました。<br>これまでサービスをご利用いただき、誠にありがとうございました。</p><p>旅するデジタルペット『たびぺっち』チーム</p>`;
+
+  await sendEmail(email, subject, body, undefined, undefined, { html: htmlBody });
   console.log(`Unsubscribe confirmation sent to: ${email}`);
 }
 
 export async function sendExistingPetEmail(email: string): Promise<void> {
   const subject = "[旅ペット登録済み]";
   const body = `
-こんにちは！
+こんにちは、たびぺっち運営チームです。
 
-既に旅ペットを登録されています。\n引き続き旅をお楽しみください！\n\n旅ペットチーム
+既に旅ペットを登録されています。
+引き続き、旅先からの便りをお楽しみください。
+
+旅するデジタルペット『たびぺっち』チーム
 `;
 
-  await sendEmail(email, subject, body);
+  // eslint-disable-next-line quotes
+  const htmlBody = `<p>こんにちは、たびぺっち運営チームです。</p><p>既に旅ペットを登録されています。<br>引き続き、旅先からの便りをお楽しみください。</p><p>旅するデジタルペット『たびぺっち』チーム</p>`;
+
+  await sendEmail(email, subject, body, undefined, undefined, { html: htmlBody });
   console.log(`Existing pet notice sent to: ${email}`);
 }
 

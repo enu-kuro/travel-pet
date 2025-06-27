@@ -70,18 +70,24 @@ export async function sendPetCreationEmail(
 ): Promise<void> {
   const subject = "[旅ペット作成完了]";
   const body = `
-こんにちは！
+こんにちは、たびぺっち運営チームです。
 
-あなたの旅ペットが誕生しました🎉
+あなたの旅ペット「${profile.name}」が誕生しました！
 
-${JSON.stringify(profile)}
+${profile.introduction}
 
 これからこのペットが毎日旅日記をお届けします。
-どんな冒険が待っているか、お楽しみに！
+どんな冒険が待っているか、お楽しみに。
 
-旅ペットチーム
+旅するデジタルペット『たびぺっち』チーム
 `;
 
-  await sendEmail(email, subject, body);
+  // eslint-disable-next-line quotes
+  const htmlBody = `<p>こんにちは、たびぺっち運営チームです。</p><p>あなたの旅ペット「${profile.name}」が誕生しました！</p><p>${profile.introduction.replace(
+    /\n/g,
+    "<br>"
+  )}</p><p>これからこのペットが毎日旅日記をお届けします。<br>どんな冒険が待っているか、お楽しみに。</p><p>旅するデジタルペット『たびぺっち』チーム</p>`;
+
+  await sendEmail(email, subject, body, undefined, undefined, { html: htmlBody });
   console.log(`Creation email sent to: ${email}`);
 }
