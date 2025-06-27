@@ -123,7 +123,7 @@ export const manualDiaryEmailSend = onRequest(
   }
 );
 
-// onRequest動作確認用
+// Example HTTP trigger for manual testing
 export const helloWorld = onRequest(async (_req, res) => {
   res.status(200).send("✅ Hello from Gen 2 Cloud Functions!");
 });
