@@ -42,6 +42,13 @@ Firebaseを中心としたサーバーレス構成により、スケーラビリ
 
 - **IMAP/Nodemailer**: 特定のメールエイリアス（`+travel-pet`）へのメールをIMAPで定期的に監視し、新規ユーザーを検知します。日記の送信にはNodemailerを利用しています。
 
+## 📊 システム構成図
+
+このリポジトリの [`docs/systemDiagram.puml`](docs/systemDiagram.puml) に、
+Travel Pet サービスのシステム構成図を PlantUML 形式で保存しています。
+PlantUML でレンダリングすることで、メール送信から日記生成までの
+フローを俯瞰できます。
+
 ## 🛠️ セットアップと実行方法
 
 ### 前提条件
