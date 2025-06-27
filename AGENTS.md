@@ -32,6 +32,7 @@ Travel Pet digital companion service that creates virtual pets for users and sen
 ├── AGENTS.md                 # This file: AI Agent Project Guide
 ├── GEMINI.md                 # Instructions for the Gemini agent
 ├── README.md                 # Project README
+├── systemDiagram.puml       # PlantUML system diagram
 ├── firebase.json             # Firebase hosting and functions configuration
 ├── functions/                # Firebase Cloud Functions directory
 │   ├── .eslintrc.js          # ESLint configuration for functions

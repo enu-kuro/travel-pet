@@ -44,7 +44,7 @@ Firebaseを中心としたサーバーレス構成により、スケーラビリ
 
 ## 📊 システム構成図
 
-このリポジトリの [`docs/systemDiagram.puml`](docs/systemDiagram.puml) に、
+このリポジトリの [`systemDiagram.puml`](systemDiagram.puml) に、
 Travel Pet サービスのシステム構成図を PlantUML 形式で保存しています。
 PlantUML でレンダリングすることで、メール送信から日記生成までの
 フローを俯瞰できます。
