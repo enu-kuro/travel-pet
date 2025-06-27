@@ -23,6 +23,7 @@ export const generateDiaryImageFlow = ai.defineFlow(
       model: vertexAI.model("imagen-4.0-fast-generate-preview-06-06"),
       prompt: input.prompt,
       output: { format: "media" },
+      config: { aspectRatio: "1:1" },
     });
 
     const url = result.media?.url;

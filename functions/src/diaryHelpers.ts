@@ -5,11 +5,8 @@ import { FieldValue } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { Destination, PetProfileData } from "./genkit.config";
 
-
 // 分離されたFirestore読み取り関数
-export async function getPetFromFirestore(
-  petId: string
-): Promise<{
+export async function getPetFromFirestore(petId: string): Promise<{
   email: string;
   profile: PetProfileData;
   destinations?: string[];
@@ -44,6 +41,7 @@ export async function saveDestinationToFirestore(
   console.log(`Destination saved to Firestore for pet: ${petId}`);
 }
 
+export const IMAGE_RESIZE_SUFFIX = "_512x512";
 
 export async function saveImageToStorage(
   dataUrl: string,
@@ -51,13 +49,20 @@ export async function saveImageToStorage(
   date: string
 ): Promise<string> {
   const bucket = getStorage().bucket();
+
+  // 元画像を保存
   const base64 = dataUrl.split(",", 2)[1];
   const buffer = Buffer.from(base64, "base64");
-  const filePath = `diaryImages/${petId}/${date}.png`;
-  const file = bucket.file(filePath);
-  await file.save(buffer, { contentType: "image/png" });
-  const encodedPath = encodeURIComponent(filePath);
-  return `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedPath}?alt=media`;
+  const originalPath = `diaryImages/${petId}/${date}.png`;
+  const originalFile = bucket.file(originalPath);
+  await originalFile.save(buffer, { contentType: "image/png" });
+
+  // リサイズ後のファイル名を組み立て
+  const resizedPath = `diaryImages/${petId}/${date}${IMAGE_RESIZE_SUFFIX}.png`;
+  const encodedResizedPath = encodeURIComponent(resizedPath);
+
+  // リサイズ後画像のダウンロード URL を返す
+  return `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedResizedPath}?alt=media`;
 }
 
 // 分離されたFirestore保存関数
@@ -126,9 +131,14 @@ ${diary}
 
   let htmlBody: string | undefined;
   if (imageUrl) {
-    htmlBody = `<p>こんにちは！</p><p>今日の旅日記をお届けします📖</p><p>${diary.replace(/\n/g, "<br>")}</p><img src="${imageUrl}" alt="diary image"/><p>それでは、また明日の冒険をお楽しみに！</p><p>あなたの旅ペットより</p>`;
+    htmlBody = `<p>こんにちは！</p><p>今日の旅日記をお届けします📖</p><p>${diary.replace(
+      /\n/g,
+      "<br>"
+    )}</p><img src="${imageUrl}" alt="diary image"/><p>それでは、また明日の冒険をお楽しみに！</p><p>あなたの旅ペットより</p>`;
   }
 
-  await sendEmail(email, subject, body, undefined, undefined, { html: htmlBody });
+  await sendEmail(email, subject, body, undefined, undefined, {
+    html: htmlBody,
+  });
   console.log(`Diary email sent to: ${email} for ${location}`);
 }

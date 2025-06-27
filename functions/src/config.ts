@@ -9,6 +9,8 @@ export const PET_LIFESPAN_DAYS = 10;
 // Gmail label used for alias emails
 export const TRAVEL_PET_LABEL = "Travel-Pet";
 
+export const IMAGE_RESIZE_SUFFIX = "_512x512";
+
 export interface SecretProvider {
   getEmailAddress(): Promise<string>;
   getEmailAppPassword(): Promise<string>;

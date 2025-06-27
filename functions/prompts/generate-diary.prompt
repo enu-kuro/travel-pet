@@ -48,5 +48,5 @@ travel_material: {{json travel_material}}
 # 出力形式（Strict JSON）
 {
   "diary": "日記本文（400～600字、日記単体で成り立つこと）",
-  "image_prompt": "絵日記風の画像生成に使う簡潔な英語のプロンプト"
+  "image_prompt": "絵日記風の画像生成に使う英語のプロンプト(画像生成AIに渡して絵日記用の絵を生成してもらいます)"
 }
