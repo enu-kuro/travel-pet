@@ -61,11 +61,14 @@ Travel Pet digital companion service that creates virtual pets for users and sen
 ## 🛠 Tech Stack
 - **Runtime:** Node.js 20
 - **Language:** TypeScript 4.x
-- **Framework:** Firebase Cloud Functions v2
-- **AI:** Google Vertex AI (Gemini)
+- **Framework:** Firebase Cloud Functions v2, Genkit
+- **AI:** Google Vertex AI (Gemini, Imagen)
 - **Database:** Firestore
+- **Storage:** Cloud Storage for Firebase
+- **Prompt Management:** Dotprompt
+- **Secret Management:** Google Cloud Secret Manager
 - **Email:** nodemailer + imap
-- **Scheduler:** Cloud Scheduler
+- **Scheduler:** Google Cloud Scheduler
 
 ## ✍️ Coding Conventions
 - Variables: camelCase (`petProfile`, `emailAddress`)
