@@ -15,6 +15,7 @@ Travel Pet digital companion service that creates virtual pets for users and sen
 ├── .firebaserc               # Firebase project configuration
 ├── .gitignore                # Specifies intentionally untracked files that Git should ignore
 ├── AGENTS.md                 # This file: AI Agent Project Guide
+├── GEMINI.md                 # Instructions for the Gemini agent
 ├── README.md                 # Project README
 ├── firebase.json             # Firebase hosting and functions configuration
 ├── functions/                # Firebase Cloud Functions directory
