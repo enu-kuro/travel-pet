@@ -133,13 +133,14 @@ ${diary}
 旅するデジタルペット『たびぺっち』チーム
 `;
 
-  const locationLine = location ? `<p>今回は「${location}」を訪れています。</p>` : "";
+  const locationLine = location
+    ? `<p>今回は「${location}」を訪れています。</p>`
+    : "";
   const imageTag = imageUrl ? `<img src="${imageUrl}" alt="diary image"/>` : "";
+  const diaryHtml = diary.replace(/\n/g, "<br>");
+  const diarySection = `<div style="border:1px solid #eee;padding:1em;margin:1em 0;background:#fafafa;font-family:serif;line-height:1.6;">${diaryHtml}${imageTag}</div>`;
   // eslint-disable-next-line quotes
-  const htmlBody = `<p>こんにちは、たびぺっち運営チームです。</p><p>あなたの旅ペットから本日の旅の便りが届きました。</p>${locationLine}<hr><p>${diary.replace(
-    /\n/g,
-    "<br>"
-  )}</p>${imageTag}<p>明日はどんな景色を見せてくれるのでしょうか。<br>楽しみにお待ちください。</p><p>旅するデジタルペット『たびぺっち』チーム</p>`;
+  const htmlBody = `<p>こんにちは、たびぺっち運営チームです。</p><p>あなたの旅ペットから本日の旅便りが届きました。</p>${locationLine}${diarySection}<p>明日はどんな景色を見せてくれるのでしょうか。<br>楽しみにお待ちください。</p><p>旅するデジタルペット『たびぺっち』チーム</p>`;
 
   await sendEmail(email, subject, body, undefined, undefined, {
     html: htmlBody,
