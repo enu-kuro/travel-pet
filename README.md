@@ -43,6 +43,7 @@ Firebaseを中心としたサーバーレス構成により、スケーラビリ
 - **Cloud Storage for Firebase**: Imagenが生成した画像を保存し、メールに添付する際に利用します。
 - **Firebase Extensions (Resize Images)**: Imagenで生成された画像は容量が大きいため、Cloud Storageに保存された後、Firebase Extensionの「Resize Images」を利用して自動的に適切なサイズにリサイズされます。これにより、メール送信時のデータ量を削減し、ユーザー体験を向上させています。
 - **Google Cloud Scheduler**: 毎日定時に日記生成フローをトリガーし、全ユーザーに日記を送信します。
+- **Secret Management:** Google Cloud Secret Managerを利用して、Gmailのアプリパスワードなどの機密情報を安全に管理しています。
 
 ### 4. メール駆動のユニークなUX
 ユーザーはメールを送るだけでサービスを利用開始できます。このシンプルな体験の裏側では、以下の技術が連携しています。
