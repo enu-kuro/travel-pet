@@ -30,7 +30,8 @@ skinparam {
 actor "ユーザー" as User
 cloud "Gmail" as Gmail #FFEBEE
 
-package "Google Cloud" #EDF2FF {
+package "Google Cloud (Firebase)" #EDF2FF {
+    database "Secret Manager\n(Gmail App Password)" as SecretManager #FFF3CD
     queue "Cloud Scheduler" as CloudScheduler
     database "Firestore" as Firestore
     cloud "Cloud Storage\n(Resize Images)" as CloudStorage #E8F5E8

@@ -4,7 +4,7 @@ export const EMAIL_ADDRESS = defineSecret("EMAIL_ADDRESS");
 export const EMAIL_APP_PASSWORD = defineSecret("EMAIL_APP_PASSWORD");
 
 // ペットの寿命（日数）
-export const PET_LIFESPAN_DAYS = 10;
+export const PET_LIFESPAN_DAYS = 4;
 
 // Gmail label used for alias emails
 export const TRAVEL_PET_LABEL = "Travel-Pet";
