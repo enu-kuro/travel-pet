@@ -123,7 +123,9 @@ export async function sendDiaryEmail(
 あなたの旅ペットから本日の旅の便りが届きました。
 ${location ? `今回は「${location}」を訪れています。` : ""}
 
+———本日の旅日記———
 ${diary}
+———
 
 明日はどんな景色を見せてくれるのでしょうか。
 楽しみにお待ちください。
@@ -134,7 +136,7 @@ ${diary}
   const locationLine = location ? `<p>今回は「${location}」を訪れています。</p>` : "";
   const imageTag = imageUrl ? `<img src="${imageUrl}" alt="diary image"/>` : "";
   // eslint-disable-next-line quotes
-  const htmlBody = `<p>こんにちは、たびぺっち運営チームです。</p><p>あなたの旅ペットから本日の旅の便りが届きました。</p>${locationLine}<p>${diary.replace(
+  const htmlBody = `<p>こんにちは、たびぺっち運営チームです。</p><p>あなたの旅ペットから本日の旅の便りが届きました。</p>${locationLine}<hr><p>${diary.replace(
     /\n/g,
     "<br>"
   )}</p>${imageTag}<p>明日はどんな景色を見せてくれるのでしょうか。<br>楽しみにお待ちください。</p><p>旅するデジタルペット『たびぺっち』チーム</p>`;
