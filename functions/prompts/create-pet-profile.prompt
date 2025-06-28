@@ -1,7 +1,7 @@
 ---
-model: vertexai/gemini-2.0-flash-lite
+model: vertexai/gemini-2.0-flash
 config:
-  temperature: 1.0
+  temperature: 2.0
 input:
   schema: EmptySchema
 output:

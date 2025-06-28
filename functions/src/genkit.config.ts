@@ -46,7 +46,7 @@ export const GenerateDestinationInputSchema = ai.defineSchema(
   z.object({
     persona_dna: PersonaSchema,
     date: z.string(),
-    past_destinations: z.array(z.string()).optional(),
+    past_destinations: z.array(z.string()),
   })
 );
 

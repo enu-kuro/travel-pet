@@ -12,6 +12,9 @@ export const DiaryImageOutputSchema = ai.defineSchema(
   z.object({ url: z.string() })
 );
 
+const STYLE_PROMPT =
+  "a soft, storybook-style landscape illustration, watercolor texture, warm muted colors, hand-drawn feel, gentle lighting, 2D digital painting, cozy and nostalgic mood, no characters, no text, no photo-realism";
+
 export const generateDiaryImageFlow = ai.defineFlow(
   {
     name: "generateDiaryImageFlow",
@@ -21,7 +24,7 @@ export const generateDiaryImageFlow = ai.defineFlow(
   async (input) => {
     const result = await ai.generate({
       model: vertexAI.model("imagen-4.0-fast-generate-preview-06-06"),
-      prompt: input.prompt,
+      prompt: `${input.prompt}, ${STYLE_PROMPT}`,
       output: { format: "media" },
       config: { aspectRatio: "1:1" },
     });
