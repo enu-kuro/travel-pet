@@ -79,6 +79,10 @@ ${profile.introduction}
 これからこのペットが毎日旅日記をお届けします。
 どんな冒険が待っているか、お楽しみに。
 
+※ペットの旅は数日で終了します。
+※配信停止は件名に「配信停止」と書いたメールを送るだけで可能です。旅を終えると以降のメールは届きません。
+※終了時には登録情報を削除し、メールアドレスを他に利用することはありません。
+
 旅するデジタルペット『たびぺっち』チーム
 `;
 
@@ -86,7 +90,7 @@ ${profile.introduction}
   const htmlBody = `<p>こんにちは、たびぺっち運営チームです。</p><p>あなたの旅ペット「${profile.name}」が誕生しました！</p><p>${profile.introduction.replace(
     /\n/g,
     "<br>"
-  )}</p><p>これからこのペットが毎日旅日記をお届けします。<br>どんな冒険が待っているか、お楽しみに。</p><p>旅するデジタルペット『たびぺっち』チーム</p>`;
+  )}</p><p>これからこのペットが毎日旅日記をお届けします。<br>どんな冒険が待っているか、お楽しみに。</p><p style="font-size:smaller;">ペットの旅は数日で終了します。</p><p style="font-size:smaller;">配信停止は件名に「配信停止」と書いたメールを送るだけで可能です。旅を終えると以降のメールは届きません。</p><p style="font-size:smaller;">終了時には登録情報を削除し、メールアドレスを他に利用することはありません。</p><p>旅するデジタルペット『たびぺっち』チーム</p>`;
 
   await sendEmail(email, subject, body, undefined, undefined, { html: htmlBody });
   console.log(`Creation email sent to: ${email}`);
