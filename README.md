@@ -107,6 +107,18 @@ Firebaseにファンクションをデプロイします。
 npm run deploy
 ```
 
+### 6. Hosting デモ
+ローカルエミュレータを起動すると、`public/index.html` の簡易インターフェースから
+ペット生成〜日記生成までのフローを試せます。
+
+```bash
+# プロジェクトルートで実行
+firebase emulators:start --only hosting,functions
+```
+ブラウザで `http://localhost:5005` を開くとデモ画面が表示され、ボタン一つで各フロー
+が順番に実行されます。生成されたペット情報・旅先・日記・画像が画面に表示され、
+審査員が機能をすぐ確認できます。
+
 ## 📜 主な処理フロー
 
 1.  **ペットの誕生 ([`emailCheckTrigger`](functions/src/index.ts#L14-L28))**:

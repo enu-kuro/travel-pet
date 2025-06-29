@@ -58,6 +58,9 @@ Travel Pet digital companion service that creates virtual pets for users and sen
 │   │   ├── types.ts          # Shared type definitions
 │   ├── tsconfig.dev.json     # TypeScript configuration for development
 │   └── tsconfig.json         # TypeScript configuration
+├── public/                   # Firebase Hosting demo site
+│   ├── index.html            # Demo interface for judges
+│   └── script.js             # Client-side logic calling on-call flows
 ```
 
 ## 🛠 Tech Stack
