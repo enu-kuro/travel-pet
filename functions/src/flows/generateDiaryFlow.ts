@@ -1,3 +1,4 @@
+import { onCallGenkit } from "firebase-functions/v2/https";
 import { ai, GenerateDiaryInputSchema, DiarySchema } from "../genkit.config";
 
 const generateDiaryPrompt = ai.prompt<
@@ -19,3 +20,8 @@ export const generateDiaryFlow = ai.defineFlow(
     return output;
   }
 );
+
+// Export callable Cloud Function for client access
+export const generateDiary = onCallGenkit(generateDiaryFlow);
+
+

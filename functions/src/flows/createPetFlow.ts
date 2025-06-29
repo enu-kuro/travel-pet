@@ -1,4 +1,5 @@
 import { Timestamp } from "firebase-admin/firestore";
+import { onCallGenkit } from "firebase-functions/v2/https";
 import { sendEmail } from "../email";
 import { PetProfile } from "../types";
 import { db } from "../firebase";
@@ -93,3 +94,7 @@ ${profile.introduction}
   await sendEmail(email, subject, body, undefined, undefined, { html: htmlBody });
   console.log(`Creation email sent to: ${email}`);
 }
+
+// Export callable Cloud Function for client access
+export const createPet = onCallGenkit(createPetFlow);
+
