@@ -36,7 +36,7 @@ export class FirestoreEmailProcessor implements EmailProcessor {
   }
 
   async createPet(email: string): Promise<void> {
-    const result = await createPetFlow({ email });
+    const result = await createPetFlow({});
     const petId = await savePetToFirestore(email, result.profile);
     console.log(`Pet created with ID: ${petId}`);
     await sendPetCreationEmail(email, result.profile);

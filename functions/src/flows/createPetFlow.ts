@@ -1,14 +1,12 @@
 import { Timestamp } from "firebase-admin/firestore";
-import { z } from "zod";
 import { sendEmail } from "../email";
 import { PetProfile } from "../types";
 import { db } from "../firebase";
 import { ai, EmptySchema, PetProfileSchema, PetProfileData } from "../genkit.config";
+import { z } from "zod";
 
 // Zod schemas for input/output validation
-const CreatePetInputSchema = z.object({
-  email: z.string(),
-});
+const CreatePetInputSchema = EmptySchema;
 
 const CreatePetOutputSchema = z.object({
   profile: PetProfileSchema,
@@ -21,8 +19,8 @@ export const createPetFlow = ai.defineFlow(
     inputSchema: CreatePetInputSchema,
     outputSchema: CreatePetOutputSchema,
   },
-  async (input) => {
-    console.log(`Generating pet profile for email: ${input.email}`);
+  async () => {
+    console.log("Generating pet profile");
 
     // AI処理のみ: Generate pet profile
     const petProfilePrompt = ai.prompt<
@@ -34,7 +32,7 @@ export const createPetFlow = ai.defineFlow(
       throw new Error("Failed to generate pet profile");
     }
 
-    console.log(`Pet profile generated for: ${input.email}`);
+    console.log("Pet profile generated");
 
     return {
       profile: output,
