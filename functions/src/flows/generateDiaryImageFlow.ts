@@ -1,5 +1,5 @@
 import vertexAI from "@genkit-ai/vertexai";
-import { ai } from "./genkit.config";
+import { ai } from "../genkit.config";
 import { z } from "zod";
 
 const DiaryImageInputSchema = ai.defineSchema(

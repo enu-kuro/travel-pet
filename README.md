@@ -112,15 +112,15 @@ npm run deploy
 1.  **ペットの誕生 ([`emailCheckTrigger`](functions/src/index.ts#L14-L28))**:
     - ユーザーが `your-email+travel-pet@gmail.com` にメールを送信。
     - Cloud Schedulerで`emailCheckTrigger`をトリガーすることで、IMAPでメールを定期的に検知。（10分間隔）
-    - [`createPetFlow`](functions/src/createPetFlow.ts) が実行され、Geminiがペットのプロフィールを生成。
+    - [`createPetFlow`](functions/src/flows/createPetFlow.ts) が実行され、Geminiがペットのプロフィールを生成。
     - Firestoreにペットのデータが保存される。
     - `配信停止`もここで同時に検知し、ペットデータを削除。
 
 2.  **日記の生成 ([`dailyDiaryTrigger`](functions/src/index.ts#L30-L44))**:
     - 毎日、Cloud Schedulerがこのフローをトリガー。（午前5時30分）
     - [`generateDiariesForAllPets`](functions/src/diaryService.ts#L15-L67) が実行され、各ペットに対して以下の処理を行う:
-        - [`generateDestinationFlow`](functions/src/generateDestinationFlow.ts) でGeminiがランダムな旅先を生成。
-        - [`generateDiaryFlow`](functions/src/generateDiaryFlow.ts) でGeminiが日記の文章を、[`generateDiaryImageFlow`](functions/src/generateDiaryImageFlow.ts)でImagenが画像を生成。
+        - [`generateDestinationFlow`](functions/src/flows/generateDestinationFlow.ts) でGeminiがランダムな旅先を生成。
+        - [`generateDiaryFlow`](functions/src/flows/generateDiaryFlow.ts) でGeminiが日記の文章を、[`generateDiaryImageFlow`](functions/src/flows/generateDiaryImageFlow.ts)でImagenが画像を生成。
     - 生成された日記データはFirestoreに保存される。
 
 3.  **日記のメール送信 ([`dailyDiaryEmailTrigger`](functions/src/index.ts#L46-L60))**:

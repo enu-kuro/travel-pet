@@ -1,4 +1,4 @@
-import { ai, GenerateDiaryInputSchema, DiarySchema } from "./genkit.config";
+import { ai, GenerateDiaryInputSchema, DiarySchema } from "../genkit.config";
 
 const generateDiaryPrompt = ai.prompt<
   typeof GenerateDiaryInputSchema,

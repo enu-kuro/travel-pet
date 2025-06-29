@@ -1,9 +1,9 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
-import { sendEmail } from "./email";
-import { PetProfile } from "./types";
-import { db } from "./firebase";
-import { ai, EmptySchema, PetProfileSchema, PetProfileData } from "./genkit.config";
+import { sendEmail } from "../email";
+import { PetProfile } from "../types";
+import { db } from "../firebase";
+import { ai, EmptySchema, PetProfileSchema, PetProfileData } from "../genkit.config";
 
 // Zod schemas for input/output validation
 const CreatePetInputSchema = z.object({

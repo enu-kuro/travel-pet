@@ -3,7 +3,10 @@ import { Timestamp } from "firebase-admin/firestore";
 import * as index from "./index";
 import * as emailUtils from "./email";
 
-import { savePetToFirestore, sendPetCreationEmail } from "./createPetFlow";
+import {
+  savePetToFirestore,
+  sendPetCreationEmail,
+} from "./flows/createPetFlow";
 
 // Mocks for Firestore
 const setMock = vi.fn().mockResolvedValue(undefined);

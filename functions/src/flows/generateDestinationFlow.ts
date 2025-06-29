@@ -1,4 +1,4 @@
-import { ai, DestinationSchema, GenerateDestinationInputSchema } from "./genkit.config";
+import { ai, DestinationSchema, GenerateDestinationInputSchema } from "../genkit.config";
 
 const generateDestinationPrompt = ai.prompt<
   typeof GenerateDestinationInputSchema,
