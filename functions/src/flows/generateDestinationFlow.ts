@@ -1,5 +1,8 @@
-import { onCallGenkit } from "firebase-functions/v2/https";
-import { ai, DestinationSchema, GenerateDestinationInputSchema } from "../genkit.config";
+import {
+  ai,
+  DestinationSchema,
+  GenerateDestinationInputSchema,
+} from "../genkit.config";
 
 const generateDestinationPrompt = ai.prompt<
   typeof GenerateDestinationInputSchema,
@@ -20,8 +23,3 @@ export const generateDestinationFlow = ai.defineFlow(
     return output;
   }
 );
-
-// Export callable Cloud Function for client access
-export const generateDestination = onCallGenkit(generateDestinationFlow);
-
-

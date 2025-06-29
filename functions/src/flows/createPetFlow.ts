@@ -1,9 +1,13 @@
 import { Timestamp } from "firebase-admin/firestore";
-import { onCallGenkit } from "firebase-functions/v2/https";
 import { sendEmail } from "../email";
 import { PetProfile } from "../types";
 import { db } from "../firebase";
-import { ai, EmptySchema, PetProfileSchema, PetProfileData } from "../genkit.config";
+import {
+  ai,
+  EmptySchema,
+  PetProfileSchema,
+  PetProfileData,
+} from "../genkit.config";
 import { z } from "zod";
 
 // Zod schemas for input/output validation
@@ -86,15 +90,15 @@ ${profile.introduction}
 `;
 
   // eslint-disable-next-line quotes
-  const htmlBody = `<p>こんにちは、たびぺっち運営チームです。</p><p>あなたの旅ペット「${profile.name}」が誕生しました！</p><p>${profile.introduction.replace(
+  const htmlBody = `<p>こんにちは、たびぺっち運営チームです。</p><p>あなたの旅ペット「${
+    profile.name
+  }」が誕生しました！</p><p>${profile.introduction.replace(
     /\n/g,
     "<br>"
   )}</p><p>これからこのペットが毎日旅日記をお届けします。<br>どんな冒険が待っているか、お楽しみに。</p><p style="font-size:smaller;">ペットの旅は数日で終了します。</p><p style="font-size:smaller;">配信停止は件名に「配信停止」と書いたメールを送るだけで可能です。旅を終えると以降のメールは届きません。</p><p style="font-size:smaller;">終了時には登録情報を削除し、メールアドレスを他に利用することはありません。</p><p>旅するデジタルペット『たびぺっち』チーム</p>`;
 
-  await sendEmail(email, subject, body, undefined, undefined, { html: htmlBody });
+  await sendEmail(email, subject, body, undefined, undefined, {
+    html: htmlBody,
+  });
   console.log(`Creation email sent to: ${email}`);
 }
-
-// Export callable Cloud Function for client access
-export const createPet = onCallGenkit(createPetFlow);
-

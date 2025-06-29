@@ -1,4 +1,4 @@
-import { onRequest } from "firebase-functions/v2/https";
+import { onCallGenkit, onRequest } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 
 import { checkNewEmailsAndCreatePet } from "./emailService";
@@ -8,6 +8,10 @@ import {
 } from "./diaryService";
 import { deleteExpiredPets } from "./petService";
 import { EMAIL_ADDRESS, EMAIL_APP_PASSWORD } from "./config";
+import { createPetFlow } from "./flows/createPetFlow";
+import { generateDestinationFlow } from "./flows/generateDestinationFlow";
+import { generateDiaryFlow } from "./flows/generateDiaryFlow";
+import { generateDiaryImageFlow } from "./flows/generateDiaryImageFlow";
 
 export { db } from "./firebase";
 
@@ -128,7 +132,7 @@ export const helloWorld = onRequest(async (_req, res) => {
   res.status(200).send("✅ Hello from Gen 2 Cloud Functions!");
 });
 
-// Export Genkit flows for client-side invocation
-export { createPet as createPetFlow } from "./flows/createPetFlow";
-export { generateDestination as generateDestinationFlow } from "./flows/generateDestinationFlow";
-export { generateDiary as generateDiaryFlow } from "./flows/generateDiaryFlow";
+export const createPet = onCallGenkit(createPetFlow);
+export const generateDestination = onCallGenkit(generateDestinationFlow);
+export const generateDiary = onCallGenkit(generateDiaryFlow);
+export const generateDiaryImage = onCallGenkit(generateDiaryImageFlow);
