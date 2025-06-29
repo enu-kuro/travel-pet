@@ -40,17 +40,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 type: 'cat'
             });
             console.log('createPetFlow response:', petResult.data);
-            const pet = petResult.data;
-            if (!pet || !pet.name || !pet.type || !pet.personality) {
-                throw new Error('Invalid pet data received from createPetFlow.');
+            const petDataWrapper = petResult.data; // This is { profile: PetProfileData }
+            if (!petDataWrapper || !petDataWrapper.profile || !petDataWrapper.profile.name || !petDataWrapper.profile.type || !petDataWrapper.profile.personality) {
+                throw new Error('Invalid pet data received from createPetFlow. Expected { profile: { name, type, personality, ... } }');
             }
-            petOutput.textContent = JSON.stringify(pet, null, 2);
+            const petProfile = petDataWrapper.profile; // This is the actual PetProfileData
+            petOutput.textContent = JSON.stringify(petProfile, null, 2);
             petDetailsDiv.style.display = 'block';
 
             // 2. Generate Destination
-            console.log('Calling generateDestinationFlow with pet:', pet);
+            console.log('Calling generateDestinationFlow with pet profile:', petProfile);
             const generateDestination = functions.httpsCallable('generateDestinationFlow');
-            const destinationResult = await generateDestination({ pet });
+            const destinationResult = await generateDestination({ pet: petProfile }); // Pass the petProfile
             console.log('generateDestinationFlow response:', destinationResult.data);
             const destination = destinationResult.data;
             if (!destination || !destination.name || !destination.description) {
@@ -60,9 +61,9 @@ document.addEventListener('DOMContentLoaded', () => {
             destinationDetailsDiv.style.display = 'block';
 
             // 3. Generate Diary
-            console.log('Calling generateDiaryFlow with pet and destination:', pet, destination);
+            console.log('Calling generateDiaryFlow with pet profile and destination:', petProfile, destination);
             const generateDiary = functions.httpsCallable('generateDiaryFlow');
-            const diaryResult = await generateDiary({ pet, destination });
+            const diaryResult = await generateDiary({ pet: petProfile, destination }); // Pass the petProfile
             console.log('generateDiaryFlow response:', diaryResult.data);
             const diary = diaryResult.data;
             if (!diary || !diary.title || !diary.entry) {
