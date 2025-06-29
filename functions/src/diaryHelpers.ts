@@ -136,7 +136,9 @@ ${diary}
   const locationLine = location
     ? `<p>今回は「${location}」を訪れています。</p>`
     : "";
-  const imageTag = imageUrl ? `<img src="${imageUrl}" alt="diary image"/>` : "";
+  const imageTag = imageUrl
+    ? `<img src="${imageUrl}" alt="diary image" style="display:block;margin-top:0.5em;"/>`
+    : "";
   const diaryHtml = diary.replace(/\n/g, "<br>");
   const diarySection = `<div style="border:1px solid #eee;padding:1em;margin:1em 0;background:#fafafa;font-family:serif;line-height:1.6;">${diaryHtml}${imageTag}</div>`;
   // eslint-disable-next-line quotes
