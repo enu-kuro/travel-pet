@@ -5,11 +5,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const petOutput = document.getElementById('petOutput');
   const destinationOutput = document.getElementById('destinationOutput');
   const diaryOutput = document.getElementById('diaryOutput');
+  const imageOutput = document.getElementById('imageOutput');
   const errorOutput = document.getElementById('errorOutput');
 
   const petDetailsDiv = document.getElementById('petDetails');
   const destinationDetailsDiv = document.getElementById('destinationDetails');
   const diaryDetailsDiv = document.getElementById('diaryDetails');
+  const imageDetailsDiv = document.getElementById('imageDetails');
   const errorDetailsDiv = document.getElementById('errorDetails');
 
   const functions = firebase.app().functions('us-central1');
@@ -20,10 +22,12 @@ document.addEventListener('DOMContentLoaded', () => {
     petDetailsDiv.style.display = 'none';
     destinationDetailsDiv.style.display = 'none';
     diaryDetailsDiv.style.display = 'none';
+    imageDetailsDiv.style.display = 'none';
     errorDetailsDiv.style.display = 'none';
     petOutput.textContent = '';
     destinationOutput.textContent = '';
     diaryOutput.textContent = '';
+    imageOutput.src = '';
     errorOutput.textContent = '';
 
     try {
@@ -53,6 +57,14 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       diaryOutput.textContent = diary.diary;
       diaryDetailsDiv.style.display = 'block';
+
+      // 4. generate diary image
+      const generateDiaryImage = functions.httpsCallable('generateDiaryImage');
+      const { data: image } = await generateDiaryImage({
+        prompt: diary.image_prompt
+      });
+      imageOutput.src = image.url;
+      imageDetailsDiv.style.display = 'block';
     } catch (error) {
       console.error(error);
       errorOutput.textContent = error.message;
