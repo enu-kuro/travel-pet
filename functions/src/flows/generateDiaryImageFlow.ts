@@ -1,4 +1,5 @@
 import vertexAI from "@genkit-ai/vertexai";
+import { onCallGenkit } from "firebase-functions/v2/https";
 import { ai } from "../genkit.config";
 import { z } from "zod";
 
@@ -36,3 +37,8 @@ export const generateDiaryImageFlow = ai.defineFlow(
     return { url };
   }
 );
+
+// Export callable Cloud Function for client access
+export const generateDiaryImage = onCallGenkit(generateDiaryImageFlow);
+
+
