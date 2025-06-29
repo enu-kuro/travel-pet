@@ -3,14 +3,65 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Pet Diary Generator</title>
+  <title>Pet Diary Demo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet" />
   <style>
-    /* … your styles … */
+    body {
+      font-family: "Noto Sans JP", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+    }
+    .container {
+      max-width: 700px;
+      margin: 2rem auto;
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    button {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border-radius: 4px;
+      border: none;
+      background-color: #1976d2;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #555;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .output {
+      margin-top: 1rem;
+      padding: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: #fafafa;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Pet Diary Generator</h1>
+    <h1>Travel Pet Demo</h1>
     <button id="generateButton">Generate Diary</button>
     <div id="loader" class="loader" style="display:none;"></div>
 
@@ -23,6 +74,10 @@
     <div id="diaryDetails" class="output" style="display:none;">
       <h2>Diary Entry</h2><pre id="diaryOutput"></pre>
     </div>
+    <div id="imageDetails" class="output" style="display:none;">
+      <h2>Diary Image</h2>
+      <img id="imageOutput" style="max-width:100%;height:auto" alt="Generated image" />
+    </div>
     <div id="errorDetails" class="output" style="display:none; color:red;">
       <h2>Error</h2><pre id="errorOutput"></pre>
     </div>
@@ -34,70 +89,7 @@
   <!-- 2) Auto-initialize + auto-emulator wiring -->
   <script src="/__/firebase/init.js?useEmulator=true"></script>
 
-  <!-- 3) Your app logic, using the global `firebase` object -->
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const btn = document.getElementById("generateButton");
-      const loader = document.getElementById("loader");
-      const petOut = document.getElementById("petOutput");
-      const destOut = document.getElementById("destinationOutput");
-      const diaryOut = document.getElementById("diaryOutput");
-      const errOut = document.getElementById("errorOutput");
-      const petDiv = document.getElementById("petDetails");
-      const destDiv = document.getElementById("destinationDetails");
-      const diaryDiv = document.getElementById("diaryDetails");
-      const errDiv = document.getElementById("errorDetails");
-
-      // get the default app + functions instance
-      const functions = firebase.app().functions("us-central1");
-
-      btn.addEventListener("click", async () => {
-        // reset UI
-        btn.disabled = true;
-        loader.style.display = "inline-block";
-        [petDiv, destDiv, diaryDiv, errDiv].forEach(d => (d.style.display = "none"));
-        [petOut, destOut, diaryOut, errOut].forEach(el => (el.textContent = ""));
-
-        try {
-          // 1️⃣ createPetFlow
-          const createPet = firebase.functions().httpsCallable("createPet");
-          const { data: petWrapper } = await createPet({});
-          const pet = petWrapper.profile;
-          console.log("Pet created:", petWrapper);
-          if (!pet?.name || !pet?.introduction || !pet?.persona_dna) {
-            throw new Error("Invalid pet data");
-          }
-          petOut.textContent = JSON.stringify(pet, null, 2);
-          petDiv.style.display = "block";
-
-          // 2️⃣ generateDestinationFlow
-          const genDest = firebase.functions().httpsCallable("generateDestination");
-          const { data: dest } = await genDest({ pet });
-          if (!dest?.name || !dest?.description) {
-            throw new Error("Invalid destination data");
-          }
-          destOut.textContent = JSON.stringify(dest, null, 2);
-          destDiv.style.display = "block";
-
-          // 3️⃣ generateDiaryFlow
-          const genDiary = firebase.functions().httpsCallable("generateDiary");
-          const { data: diary } = await genDiary({ pet, destination: dest });
-          if (!diary?.title || !diary?.entry) {
-            throw new Error("Invalid diary data");
-          }
-          diaryOut.textContent = `Title: ${diary.title}\n\n${diary.entry}`;
-          diaryDiv.style.display = "block";
-
-        } catch (e) {
-          console.error(e);
-          errOut.textContent = e.message;
-          errDiv.style.display = "block";
-        } finally {
-          btn.disabled = false;
-          loader.style.display = "none";
-        }
-      });
-    });
-  </script>
+  <!-- 3) App logic using the global `firebase` object -->
+  <script src="script.js"></script>
 </body>
 </html>
