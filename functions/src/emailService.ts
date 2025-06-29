@@ -5,7 +5,7 @@ import {
   createPetFlow,
   savePetToFirestore,
   sendPetCreationEmail,
-} from "./createPetFlow";
+} from "./flows/createPetFlow";
 import {
   getImapClient,
   getAliasEmailAddress,

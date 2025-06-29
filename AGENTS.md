@@ -43,9 +43,11 @@ Travel Pet digital companion service that creates virtual pets for users and sen
 │   │   ├── generate-destination.prompt # Prompt for generating travel destinations
 │   │   └── generate-diary.prompt     # Prompt for generating diary entries
 │   ├── src/                  # Source code for Firebase Cloud Functions
-│   │   ├── createPetFlow.ts       # Pet creation logic (editable)
-│   │   ├── generateDestinationFlow.ts # Destination generation flow
-│   │   ├── generateDiaryFlow.ts  # Diary generation flow
+│   │   ├── flows/            # Genkit flow definitions
+│   │   │   ├── createPetFlow.ts       # Pet creation logic (editable)
+│   │   │   ├── generateDestinationFlow.ts # Destination generation flow
+│   │   │   ├── generateDiaryFlow.ts  # Diary generation flow
+│   │   │   └── generateDiaryImageFlow.ts # Diary image generation flow
 │   │   ├── diaryHelpers.ts     # Firestore and email helpers for diaries
 │   │   ├── diaryService.ts       # Destination & diary orchestration
 │   │   ├── genkit.config.ts  # Genkit plugin and flow configuration
