@@ -59,7 +59,7 @@ Travel Pet digital companion service that creates virtual pets for users and sen
 │   ├── tsconfig.dev.json     # TypeScript configuration for development
 │   └── tsconfig.json         # TypeScript configuration
 ├── public/                   # Firebase Hosting demo site
-│   ├── index.html            # Demo interface for judges
+│   ├── index.html            # Hosting demo interface
 │   └── script.js             # Client-side logic calling on-call flows
 ```
 
