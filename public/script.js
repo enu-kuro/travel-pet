@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   generateButton.addEventListener('click', async () => {
     generateButton.disabled = true;
+    generateButton.textContent = 'Generating...';
     loader.style.display = 'inline-block';
     petDetailsDiv.style.display = 'none';
     destinationDetailsDiv.style.display = 'none';
@@ -37,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const petProfile = petWrapper.profile;
       petOutput.textContent = JSON.stringify(petProfile, null, 2);
       petDetailsDiv.style.display = 'block';
+      petDetailsDiv.scrollIntoView({ behavior: 'smooth' });
 
       // 2. generate destination
       const generateDestination = functions.httpsCallable('generateDestination');
@@ -48,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       destinationOutput.textContent = JSON.stringify(destination, null, 2);
       destinationDetailsDiv.style.display = 'block';
+      destinationDetailsDiv.scrollIntoView({ behavior: 'smooth' });
 
       // 3. generate diary
       const generateDiary = functions.httpsCallable('generateDiary');
@@ -57,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       diaryOutput.textContent = diary.diary;
       diaryDetailsDiv.style.display = 'block';
+      diaryDetailsDiv.scrollIntoView({ behavior: 'smooth' });
 
       // 4. generate diary image
       const generateDiaryImage = functions.httpsCallable('generateDiaryImage');
@@ -65,12 +69,15 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       imageOutput.src = image.url;
       imageDetailsDiv.style.display = 'block';
+      imageDetailsDiv.scrollIntoView({ behavior: 'smooth' });
     } catch (error) {
       console.error(error);
       errorOutput.textContent = error.message;
       errorDetailsDiv.style.display = 'block';
+      errorDetailsDiv.scrollIntoView({ behavior: 'smooth' });
     } finally {
       generateButton.disabled = false;
+      generateButton.textContent = 'Generate Diary';
       loader.style.display = 'none';
     }
   });
