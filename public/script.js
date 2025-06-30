@@ -14,34 +14,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const diaryDetailsDiv = document.getElementById('diaryDetails');
   const imageDetailsDiv = document.getElementById('imageDetails');
   const errorDetailsDiv = document.getElementById('errorDetails');
-  const entriesList = document.getElementById('entriesList');
-
   const db = firebase.app().firestore();
 
   const functions = firebase.app().functions('us-central1');
-
-  async function loadEntries() {
-    const snap = await db
-      .collection('demoDiaries')
-      .orderBy('createdAt', 'desc')
-      .limit(5)
-      .get();
-
-    entriesList.innerHTML = snap.docs
-      .map((doc) => {
-        const d = doc.data();
-        const name = d.profile?.name ?? '';
-        const loc = d.destination?.selected_location ?? '';
-        const diary = d.diary ?? '';
-        const image = d.imageUrl
-          ? `<img src="${d.imageUrl}" class="max-w-full h-auto mt-2" />`
-          : '';
-        return `<div class="p-4 border rounded"><div class="font-medium">${name} - ${loc}</div><div class="mt-1 whitespace-pre-wrap">${diary}</div>${image}</div>`;
-      })
-      .join('');
-  }
-
-  loadEntries();
 
   function displayPetDetails(profile) {
     petOutput.innerHTML = `
@@ -137,7 +112,6 @@ document.addEventListener('DOMContentLoaded', () => {
         diary: diary.diary,
         imageUrl: saved.url,
       });
-      loadEntries();
     } catch (error) {
       console.error(error);
       errorOutput.textContent = error.message;
