@@ -17,20 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const functions = firebase.app().functions('us-central1');
 
-  function renderObject(element, data) {
-    element.innerHTML = '';
-    Object.entries(data).forEach(([key, value]) => {
-      const div = document.createElement('div');
-      div.className = 'flex mb-1';
-      const label = document.createElement('span');
-      label.className = 'font-semibold mr-2';
-      label.textContent = key + ':';
-      const val = document.createElement('span');
-      val.textContent = typeof value === 'object' ? JSON.stringify(value) : value;
-      div.appendChild(label);
-      div.appendChild(val);
-      element.appendChild(div);
+  function renderObject(element, obj) {
+    const rows = Object.entries(obj).map(([k, v]) => {
+      const value = typeof v === 'object' ? JSON.stringify(v) : v;
+      return `<tr><th style="text-align:left;padding-right:8px;">${k}</th><td>${value}</td></tr>`;
     });
+    element.innerHTML = `<table>${rows.join('')}</table>`;
   }
 
   generateButton.addEventListener('click', async () => {
@@ -92,10 +84,10 @@ document.addEventListener('DOMContentLoaded', () => {
       errorOutput.textContent = error.message;
       errorDetailsDiv.style.display = 'block';
       errorDetailsDiv.scrollIntoView({ behavior: 'smooth' });
-  } finally {
-    generateButton.disabled = false;
-    buttonText.textContent = 'Generate Diary';
-    loader.style.display = 'none';
-  }
+    } finally {
+      generateButton.disabled = false;
+      buttonText.textContent = 'Generate Diary';
+      loader.style.display = 'none';
+    }
   });
 });
