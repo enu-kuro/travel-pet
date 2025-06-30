@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     entriesList.querySelectorAll('details').forEach((det) => {
       det.addEventListener('toggle', () => {
         if (det.open) {
-          det.scrollIntoView({ behavior: 'auto', block: 'start' });
+          det.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       });
     });

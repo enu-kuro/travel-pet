@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const db = firebase.app().firestore();
 
   const functions = firebase.app().functions('us-central1');
+  const viewEntriesLink = document.getElementById('viewEntries');
 
   function displayPetDetails(profile) {
     petOutput.innerHTML = `
@@ -49,6 +50,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   generateButton.addEventListener('click', async () => {
     generateButton.disabled = true;
+    if (viewEntriesLink) {
+      viewEntriesLink.classList.add('pointer-events-none', 'opacity-60');
+    }
     generateText.textContent = 'Generating...';
     spinner.classList.remove('hidden');
     petDetailsDiv.classList.add('hidden');
@@ -121,6 +125,9 @@ document.addEventListener('DOMContentLoaded', () => {
       generateButton.disabled = false;
       generateText.textContent = 'Generate Diary';
       spinner.classList.add('hidden');
+      if (viewEntriesLink) {
+        viewEntriesLink.classList.remove('pointer-events-none', 'opacity-60');
+      }
     }
   });
 });
