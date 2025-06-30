@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const db = firebase.app().firestore();
-
   firebase.appCheck().activate('6LdIZ3IrAAAAAO5jfpuH6WzpmdMvL7vCqUZ09s7P', true);
+  const db = firebase.app().firestore();
   const entriesList = document.getElementById('entriesList');
   const loading = document.getElementById('loading');
 

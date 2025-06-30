@@ -14,9 +14,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const diaryDetailsDiv = document.getElementById('diaryDetails');
   const imageDetailsDiv = document.getElementById('imageDetails');
   const errorDetailsDiv = document.getElementById('errorDetails');
+  firebase.appCheck().activate('6LdIZ3IrAAAAAO5jfpuH6WzpmdMvL7vCqUZ09s7P', true);
   const db = firebase.app().firestore();
 
-  firebase.appCheck().activate('6LdIZ3IrAAAAAO5jfpuH6WzpmdMvL7vCqUZ09s7P', true);
+  
 
   const functions = firebase.app().functions('us-central1');
   const viewEntriesLink = document.getElementById('viewEntries');
