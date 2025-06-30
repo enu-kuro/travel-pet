@@ -17,23 +17,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const functions = firebase.app().functions('us-central1');
 
+  function objectToRows(obj) {
+    return Object.entries(obj)
+      .map(([k, v]) => {
+        const value = v && typeof v === 'object'
+          ? `<table class="ml-4">${objectToRows(v)}</table>`
+          : v;
+        return `<tr><th class="text-left pr-2 align-top">${k}</th><td>${value}</td></tr>`;
+      })
+      .join('');
+  }
+
   function renderObject(element, obj) {
-    const rows = Object.entries(obj).map(([k, v]) => {
-      const value = typeof v === 'object' ? JSON.stringify(v) : v;
-      return `<tr><th style="text-align:left;padding-right:8px;">${k}</th><td>${value}</td></tr>`;
-    });
-    element.innerHTML = `<table>${rows.join('')}</table>`;
+    element.innerHTML = `<table class="w-full">${objectToRows(obj)}</table>`;
   }
 
   generateButton.addEventListener('click', async () => {
     generateButton.disabled = true;
     buttonText.textContent = 'Generating...';
     loader.style.display = 'inline-block';
-    petDetailsDiv.style.display = 'none';
-    destinationDetailsDiv.style.display = 'none';
-    diaryDetailsDiv.style.display = 'none';
-    imageDetailsDiv.style.display = 'none';
-    errorDetailsDiv.style.display = 'none';
+    petDetailsDiv.classList.add('hidden');
+    destinationDetailsDiv.classList.add('hidden');
+    diaryDetailsDiv.classList.add('hidden');
+    imageDetailsDiv.classList.add('hidden');
+    errorDetailsDiv.classList.add('hidden');
     petOutput.innerHTML = '';
     destinationOutput.innerHTML = '';
     diaryOutput.textContent = '';
@@ -46,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const { data: petWrapper } = await createPet({});
       const petProfile = petWrapper.profile;
       renderObject(petOutput, petProfile);
-      petDetailsDiv.style.display = 'block';
+      petDetailsDiv.classList.remove('hidden');
       petDetailsDiv.scrollIntoView({ behavior: 'smooth' });
 
       // 2. generate destination
@@ -58,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
         past_destinations: []
       });
       renderObject(destinationOutput, destination);
-      destinationDetailsDiv.style.display = 'block';
+      destinationDetailsDiv.classList.remove('hidden');
       destinationDetailsDiv.scrollIntoView({ behavior: 'smooth' });
 
       // 3. generate diary
@@ -68,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
         travel_material: destination
       });
       diaryOutput.textContent = diary.diary;
-      diaryDetailsDiv.style.display = 'block';
+      diaryDetailsDiv.classList.remove('hidden');
       diaryDetailsDiv.scrollIntoView({ behavior: 'smooth' });
 
       // 4. generate diary image
@@ -77,12 +84,12 @@ document.addEventListener('DOMContentLoaded', () => {
         prompt: diary.image_prompt
       });
       imageOutput.src = image.url;
-      imageDetailsDiv.style.display = 'block';
+      imageDetailsDiv.classList.remove('hidden');
       imageDetailsDiv.scrollIntoView({ behavior: 'smooth' });
     } catch (error) {
       console.error(error);
       errorOutput.textContent = error.message;
-      errorDetailsDiv.style.display = 'block';
+      errorDetailsDiv.classList.remove('hidden');
       errorDetailsDiv.scrollIntoView({ behavior: 'smooth' });
     } finally {
       generateButton.disabled = false;
