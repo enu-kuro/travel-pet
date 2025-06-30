@@ -3,17 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Pet Diary Demo</title>
+  <title>Travel Pet - 旅するデジタルペット「たびぺっち」 Demo</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="font-sans bg-gradient-to-br from-gray-50 to-gray-200 min-h-screen flex items-center justify-center">
   <div class="max-w-3xl w-full mx-auto my-8 bg-white p-6 rounded-lg shadow">
-    <img src="https://storage.googleapis.com/zenn-user-upload/9961b200ccfe-20250628.png" alt="Travel Pet" class="w-full h-72 object-cover rounded-lg mb-6" />
-    <h1 class="text-2xl font-bold mb-6 text-center">Travel Pet Demo</h1>
+    <img src="trave-pet_hero.png" alt="Travel Pet" class="w-full h-72 sm:h-96 object-cover rounded-lg mb-6" />
+    <h1 class="text-2xl font-bold mb-2 text-center">旅するデジタルペット「たびぺっち」 (動作確認用デモ)</h1>
+    <div class="text-gray-600 mb-4 text-xs text-center">
+      このデモは、「たびぺっち」のAI出力の確認用です。以下のボタンをクリックすると、ペットと日記が生成されます。
+      <br />
+      <strong>注意:</strong> このデモは実際のメール送信を行いません。生成された内容は画面上に表示されます。
+    </div>
     <div class="flex justify-center">
       <button id="generateButton" class="flex items-center px-5 py-2 text-white rounded hover:opacity-90 disabled:opacity-60" style="background-color: #75b1ae">
-        <span>Generate Diary</span>
+        <span>ペットと日記を生成する</span>
         <span id="buttonSpinner" class="ml-2 hidden border-2 border-white border-t-transparent rounded-full w-4 h-4 animate-spin"></span>
       </button>
     </div>
@@ -47,6 +52,6 @@
   <script src="/__/firebase/init.js?useEmulator=true"></script>
 
   <!-- 3) App logic using the global `firebase` object -->
-  <script src="script.js"></script>
+  <script src="script.js?v=1"></script>
 </body>
 </html>
