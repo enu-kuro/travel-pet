@@ -51,6 +51,8 @@ package "Google Cloud (Firebase)" #EDF2FF {
         [Daily Diary Email Trigger] as DiaryEmail #EFFFEF
         [Daily Pet Cleanup]        as Cleanup #FFF9E6
     }
+
+    cloud "Firebase Hosting\n(Demo Site, App Check enabled)" as FirebaseHosting #FFF8E1
 }
 
 '=== フロー定義 ===
