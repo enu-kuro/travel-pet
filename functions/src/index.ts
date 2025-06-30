@@ -1,4 +1,9 @@
-import { onCallGenkit, onRequest, onCall, HttpsError } from "firebase-functions/v2/https";
+import {
+  onCallGenkit,
+  onRequest,
+  onCall,
+  HttpsError,
+} from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 
 import { checkNewEmailsAndCreatePet } from "./emailService";
@@ -79,6 +84,7 @@ export const dailyPetCleanup = onSchedule(
   }
 );
 
+/*
 export const manualPetCleanup = onRequest(async (_req, res) => {
   try {
     await deleteExpiredPets();
@@ -127,16 +133,13 @@ export const manualDiaryEmailSend = onRequest(
     }
   }
 );
-
+*/
 // Example HTTP trigger for manual testing
 export const helloWorld = onRequest(async (_req, res) => {
   res.status(200).send("✅ Hello from Gen 2 Cloud Functions!");
 });
 
-export const createPet = onCallGenkit(
-  { enforceAppCheck: true },
-  createPetFlow
-);
+export const createPet = onCallGenkit({ enforceAppCheck: true }, createPetFlow);
 export const generateDestination = onCallGenkit(
   { enforceAppCheck: true },
   generateDestinationFlow
