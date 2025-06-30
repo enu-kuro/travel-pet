@@ -19,16 +19,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function displayPetDetails(profile) {
     petOutput.innerHTML = `
-      <table class="table-auto text-sm w-full">
+      <table class="table-auto text-sm w-full border-separate border-spacing-y-2">
         <tbody>
-          <tr><th class="pr-2 text-left">Name</th><td>${profile.name}</td></tr>
-          <tr><th class="pr-2 text-left align-top">Introduction</th><td>${profile.introduction}</td></tr>
+          <tr class="border-b"><th class="py-1 pr-3 text-left align-top whitespace-nowrap">Name</th><td class="py-1">${profile.name}</td></tr>
+          <tr class="border-b"><th class="py-1 pr-3 text-left align-top">Introduction</th><td class="py-1">${profile.introduction}</td></tr>
         </tbody>
       </table>
-      <h3 class="mt-3 font-medium">Personality DNA</h3>
-      <table class="table-auto text-sm w-full mt-1">
+      <h3 class="mt-4 font-medium">Personality DNA</h3>
+      <table class="table-auto text-sm w-full mt-2 border-separate border-spacing-y-2">
         <tbody>
-          ${Object.entries(profile.persona_dna).map(([k,v]) => `<tr><th class='pr-2 text-left'>${k}</th><td>${v}</td></tr>`).join('')}
+          ${Object.entries(profile.persona_dna).map(([k,v]) => `<tr class='border-b'><th class='py-1 pr-3 text-left whitespace-nowrap'>${k}</th><td class='py-1'>${v}</td></tr>`).join('')}
         </tbody>
       </table>
     `;
@@ -36,12 +36,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function displayDestination(dest) {
     destinationOutput.innerHTML = `
-      <table class="table-auto text-sm w-full">
+      <table class="table-auto text-sm w-full border-separate border-spacing-y-2">
         <tbody>
-          <tr><th class="pr-2 text-left">Location</th><td>${dest.selected_location}</td></tr>
-          <tr><th class="pr-2 text-left">Summary</th><td>${dest.summary}</td></tr>
-          <tr><th class="pr-2 text-left">News</th><td>${dest.news_context}</td></tr>
-          <tr><th class="pr-2 text-left">Local Details</th><td>${dest.local_details}</td></tr>
+          <tr class="border-b"><th class="py-1 pr-3 text-left align-top whitespace-nowrap">Location</th><td class="py-1">${dest.selected_location}</td></tr>
+          <tr class="border-b"><th class="py-1 pr-3 text-left align-top">Summary</th><td class="py-1">${dest.summary}</td></tr>
+          <tr class="border-b"><th class="py-1 pr-3 text-left align-top">News</th><td class="py-1">${dest.news_context}</td></tr>
+          <tr class="border-b"><th class="py-1 pr-3 text-left align-top">Local Details</th><td class="py-1">${dest.local_details}</td></tr>
         </tbody>
       </table>`;
   }
