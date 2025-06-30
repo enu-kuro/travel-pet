@@ -44,7 +44,7 @@ Firebaseを中心としたサーバーレス構成により、スケーラビリ
 - **Firebase Extensions (Resize Images)**: Imagenで生成された画像は容量が大きいため、Cloud Storageに保存された後、Firebase Extensionの「Resize Images」を利用して自動的に適切なサイズにリサイズされます。これにより、メール送信時のデータ量を削減し、ユーザー体験を向上させています。
 - **Google Cloud Scheduler**: 毎日定時に日記生成フローをトリガーし、全ユーザーに日記を送信します。
 - **Google Cloud Secret Manager**: Gmailのアプリパスワードなどの機密情報を安全に管理しています。
-- **Firebase Hosting**: 簡易なデモサイトをホスティングし、ペットと日記の生成の動作確認を行えるインターフェースを提供しています。
+- **Firebase Hosting & Firebase App Check**: `public/` 以下のデモサイトをホスティングし、App Check で保護されたインターフェースからペットと日記の生成を確認できます。
 
 ### 4. メール駆動のユニークなUX
 ユーザーはメールを送るだけでサービスを利用開始できます。このシンプルな体験の裏側では、以下の技術が連携しています。
@@ -111,6 +111,7 @@ npm run deploy
 ### 6. デモサイト
 ローカルエミュレータを起動すると、`public/index.html` の簡易インターフェースから
 ペット生成〜日記生成までのフローを試せます。
+本番環境では同ディレクトリを Firebase Hosting から配信し、Firebase App Check によって認証されたリクエストのみを許可します。
 
 ```bash
 # プロジェクトルートで実行

@@ -58,7 +58,7 @@ Travel Pet digital companion service that creates virtual pets for users and sen
 │   │   ├── types.ts          # Shared type definitions
 │   ├── tsconfig.dev.json     # TypeScript configuration for development
 │   └── tsconfig.json         # TypeScript configuration
-├── public/                   # Firebase Hosting demo site
+├── public/                   # Firebase Hosting demo site (App Check enabled)
 │   ├── index.html            # Hosting demo interface
 │   └── script.js             # Client-side logic calling on-call flows
 ```
@@ -74,6 +74,7 @@ Travel Pet digital companion service that creates virtual pets for users and sen
 - **Secret Management:** Google Cloud Secret Manager
 - **Email:** nodemailer + imap
 - **Scheduler:** Google Cloud Scheduler
+- **Hosting:** Firebase Hosting with Firebase App Check protecting the `public/` demo site
 
 ## ✍️ Coding Conventions
 - Variables: camelCase (`petProfile`, `emailAddress`)
