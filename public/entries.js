@@ -35,6 +35,14 @@ document.addEventListener('DOMContentLoaded', () => {
       })
       .join('');
     entriesList.insertAdjacentHTML('beforeend', html);
+
+    entriesList.querySelectorAll('details').forEach((det) => {
+      det.addEventListener('toggle', () => {
+        if (det.open) {
+          det.scrollIntoView({ behavior: 'auto', block: 'start' });
+        }
+      });
+    });
   }
 
   loadEntries();
