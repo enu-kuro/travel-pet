@@ -3,6 +3,7 @@ import { PetProfile, DiaryEntry } from "./types";
 import { db } from "./firebase";
 import { FieldValue } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
+import { randomUUID } from "node:crypto";
 import { Destination, PetProfileData } from "./genkit.config";
 
 // Retrieve basic pet data from Firestore
@@ -50,15 +51,18 @@ export async function saveImageToStorage(
 ): Promise<string> {
   const bucket = getStorage().bucket();
 
+  const id = randomUUID();
+
   // 元画像を保存
   const base64 = dataUrl.split(",", 2)[1];
   const buffer = Buffer.from(base64, "base64");
-  const originalPath = `diaryImages/${petId}/${date}.png`;
+  const basePath = `diaryImages/${petId}/${date}_${id}`;
+  const originalPath = `${basePath}.png`;
   const originalFile = bucket.file(originalPath);
   await originalFile.save(buffer, { contentType: "image/png" });
 
   // リサイズ後のファイル名を組み立て
-  const resizedPath = `diaryImages/${petId}/${date}${IMAGE_RESIZE_SUFFIX}.png`;
+  const resizedPath = `${basePath}${IMAGE_RESIZE_SUFFIX}.png`;
   const encodedResizedPath = encodeURIComponent(resizedPath);
 
   // リサイズ後画像のダウンロード URL を返す
