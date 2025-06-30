@@ -43,11 +43,16 @@
       <h2 class="text-lg font-semibold mb-4">Error</h2>
       <pre id="errorOutput"></pre>
     </div>
+    <div id="savedEntries" class="p-6 mt-6 border rounded-lg bg-gray-50">
+      <h2 class="text-lg font-semibold mb-4">Recent Entries</h2>
+      <div id="entriesList" class="space-y-4 text-sm"></div>
+    </div>
   </div>
 
   <!-- 1) Compat SDKs for Hosting -->
   <script src="/__/firebase/9.0.0/firebase-app-compat.js"></script>
   <script src="/__/firebase/9.0.0/firebase-functions-compat.js"></script>
+  <script src="/__/firebase/9.0.0/firebase-firestore-compat.js"></script>
   <!-- 2) Auto-initialize + auto-emulator wiring -->
   <script src="/__/firebase/init.js?useEmulator=true"></script>
 
