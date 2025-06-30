@@ -16,11 +16,12 @@
       <br />
       <strong>注意:</strong> このデモは実際のメール送信を行いません。生成された内容は画面上に表示されます。
     </div>
-    <div class="flex justify-center">
+    <div class="flex flex-col items-center space-y-2">
       <button id="generateButton" class="flex items-center px-5 py-2 text-white rounded hover:opacity-90 disabled:opacity-60" style="background-color: #75b1ae">
         <span>ペットと日記を生成する</span>
         <span id="buttonSpinner" class="ml-2 hidden border-2 border-white border-t-transparent rounded-full w-4 h-4 animate-spin"></span>
       </button>
+      <a href="entries.html" class="text-sm text-blue-600 underline">保存された日記を見る</a>
     </div>
 
     <div id="petDetails" class="hidden p-6 mt-6 border rounded-lg bg-gray-50">
@@ -48,6 +49,7 @@
   <!-- 1) Compat SDKs for Hosting -->
   <script src="/__/firebase/9.0.0/firebase-app-compat.js"></script>
   <script src="/__/firebase/9.0.0/firebase-functions-compat.js"></script>
+  <script src="/__/firebase/9.0.0/firebase-firestore-compat.js"></script>
   <!-- 2) Auto-initialize + auto-emulator wiring -->
   <script src="/__/firebase/init.js?useEmulator=true"></script>
 

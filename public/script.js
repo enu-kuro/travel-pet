@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const diaryDetailsDiv = document.getElementById('diaryDetails');
   const imageDetailsDiv = document.getElementById('imageDetails');
   const errorDetailsDiv = document.getElementById('errorDetails');
+  const db = firebase.app().firestore();
 
   const functions = firebase.app().functions('us-central1');
 
@@ -100,6 +101,17 @@ document.addEventListener('DOMContentLoaded', () => {
       imageOutput.src = image.url;
       imageDetailsDiv.classList.remove('hidden');
       imageDetailsDiv.scrollIntoView({ behavior: 'smooth' });
+
+      const saveImage = functions.httpsCallable('saveDemoImage');
+      const { data: saved } = await saveImage({ dataUrl: image.url });
+
+      await db.collection('demoDiaries').add({
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        profile: petProfile,
+        destination,
+        diary: diary.diary,
+        imageUrl: saved.url,
+      });
     } catch (error) {
       console.error(error);
       errorOutput.textContent = error.message;
