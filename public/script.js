@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const generateButton = document.getElementById('generateButton');
-  const loader = document.getElementById('loader');
+  const spinner = document.getElementById('buttonSpinner');
+  const generateText = generateButton.querySelector('span');
 
   const petOutput = document.getElementById('petOutput');
   const destinationOutput = document.getElementById('destinationOutput');
@@ -16,15 +17,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const functions = firebase.app().functions('us-central1');
 
+  function displayPetDetails(profile) {
+    petOutput.innerHTML = `
+      <table class="table-auto text-sm w-full">
+        <tbody>
+          <tr><th class="pr-2 text-left">Name</th><td>${profile.name}</td></tr>
+          <tr><th class="pr-2 text-left align-top">Introduction</th><td>${profile.introduction}</td></tr>
+        </tbody>
+      </table>
+      <h3 class="mt-3 font-medium">Personality DNA</h3>
+      <table class="table-auto text-sm w-full mt-1">
+        <tbody>
+          ${Object.entries(profile.persona_dna).map(([k,v]) => `<tr><th class='pr-2 text-left'>${k}</th><td>${v}</td></tr>`).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  function displayDestination(dest) {
+    destinationOutput.innerHTML = `
+      <table class="table-auto text-sm w-full">
+        <tbody>
+          <tr><th class="pr-2 text-left">Location</th><td>${dest.selected_location}</td></tr>
+          <tr><th class="pr-2 text-left">Summary</th><td>${dest.summary}</td></tr>
+          <tr><th class="pr-2 text-left">News</th><td>${dest.news_context}</td></tr>
+          <tr><th class="pr-2 text-left">Local Details</th><td>${dest.local_details}</td></tr>
+        </tbody>
+      </table>`;
+  }
+
   generateButton.addEventListener('click', async () => {
     generateButton.disabled = true;
-    generateButton.textContent = 'Generating...';
-    loader.style.display = 'inline-block';
-    petDetailsDiv.style.display = 'none';
-    destinationDetailsDiv.style.display = 'none';
-    diaryDetailsDiv.style.display = 'none';
-    imageDetailsDiv.style.display = 'none';
-    errorDetailsDiv.style.display = 'none';
+    generateText.textContent = 'Generating...';
+    spinner.classList.remove('hidden');
+    petDetailsDiv.classList.add('hidden');
+    destinationDetailsDiv.classList.add('hidden');
+    diaryDetailsDiv.classList.add('hidden');
+    imageDetailsDiv.classList.add('hidden');
+    errorDetailsDiv.classList.add('hidden');
     petOutput.textContent = '';
     destinationOutput.textContent = '';
     diaryOutput.textContent = '';
@@ -36,8 +66,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const createPet = functions.httpsCallable('createPet');
       const { data: petWrapper } = await createPet({});
       const petProfile = petWrapper.profile;
-      petOutput.textContent = JSON.stringify(petProfile, null, 2);
-      petDetailsDiv.style.display = 'block';
+      displayPetDetails(petProfile);
+      petDetailsDiv.classList.remove('hidden');
       petDetailsDiv.scrollIntoView({ behavior: 'smooth' });
 
       // 2. generate destination
@@ -48,8 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
         date,
         past_destinations: []
       });
-      destinationOutput.textContent = JSON.stringify(destination, null, 2);
-      destinationDetailsDiv.style.display = 'block';
+      displayDestination(destination);
+      destinationDetailsDiv.classList.remove('hidden');
       destinationDetailsDiv.scrollIntoView({ behavior: 'smooth' });
 
       // 3. generate diary
@@ -59,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
         travel_material: destination
       });
       diaryOutput.textContent = diary.diary;
-      diaryDetailsDiv.style.display = 'block';
+      diaryDetailsDiv.classList.remove('hidden');
       diaryDetailsDiv.scrollIntoView({ behavior: 'smooth' });
 
       // 4. generate diary image
@@ -68,17 +98,17 @@ document.addEventListener('DOMContentLoaded', () => {
         prompt: diary.image_prompt
       });
       imageOutput.src = image.url;
-      imageDetailsDiv.style.display = 'block';
+      imageDetailsDiv.classList.remove('hidden');
       imageDetailsDiv.scrollIntoView({ behavior: 'smooth' });
     } catch (error) {
       console.error(error);
       errorOutput.textContent = error.message;
-      errorDetailsDiv.style.display = 'block';
+      errorDetailsDiv.classList.remove('hidden');
       errorDetailsDiv.scrollIntoView({ behavior: 'smooth' });
     } finally {
       generateButton.disabled = false;
-      generateButton.textContent = 'Generate Diary';
-      loader.style.display = 'none';
+      generateText.textContent = 'Generate Diary';
+      spinner.classList.add('hidden');
     }
   });
 });
