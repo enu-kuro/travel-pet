@@ -4,83 +4,62 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pet Diary Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet" />
-  <style>
-    body {
-      font-family: "Noto Sans JP", sans-serif;
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans JP"', 'sans-serif'],
+          },
+        }
+      }
     }
-    .container {
-      max-width: 700px;
-      margin: 2rem auto;
-      background: #fff;
-      padding: 1.5rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-    button {
-      padding: 0.5rem 1rem;
-      font-size: 1rem;
-      border-radius: 4px;
-      border: none;
-      background-color: #1976d2;
-      color: #fff;
-      cursor: pointer;
-    }
-    button:disabled {
-      opacity: 0.6;
-      cursor: default;
-    }
-    pre {
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-    .loader {
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #555;
-      border-radius: 50%;
-      width: 24px;
-      height: 24px;
-      animation: spin 1s linear infinite;
-      display: inline-block;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .output {
-      margin-top: 1rem;
-      padding: 1rem;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      background: #fafafa;
-    }
-  </style>
+  </script>
 </head>
-<body>
-  <div class="container">
-    <h1>Travel Pet Demo</h1>
-    <button id="generateButton">Generate Diary</button>
-    <div id="loader" class="loader" style="display:none;"></div>
+<body class="bg-gradient-to-r from-slate-100 to-sky-100 text-gray-800 min-h-screen flex flex-col">
+  <div class="container mx-auto px-4 py-8 max-w-3xl flex-grow">
+    <!-- Header Section -->
+    <header class="text-center mb-8 sm:mb-12">
+      <img src="https://storage.googleapis.com/zenn-user-upload/9961b200ccfe-20250628.png" alt="Digital pet delivering a letter" class="w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto mb-6 sm:mb-8 rounded-lg shadow-lg">
+      <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-sky-700">Travel Pet Demo</h1>
+      <p class="mt-2 text-base sm:text-lg text-slate-600">Let your digital pet explore and send you a diary!</p>
+    </header>
 
-    <div id="petDetails" class="output" style="display:none;">
-      <h2>Pet Details</h2><pre id="petOutput"></pre>
-    </div>
-    <div id="destinationDetails" class="output" style="display:none;">
-      <h2>Destination</h2><pre id="destinationOutput"></pre>
-    </div>
-    <div id="diaryDetails" class="output" style="display:none;">
-      <h2>Diary Entry</h2><pre id="diaryOutput"></pre>
-    </div>
-    <div id="imageDetails" class="output" style="display:none;">
-      <h2>Diary Image</h2>
-      <img id="imageOutput" style="max-width:100%;height:auto" alt="Generated image" />
-    </div>
-    <div id="errorDetails" class="output" style="display:none; color:red;">
-      <h2>Error</h2><pre id="errorOutput"></pre>
-    </div>
+    <!-- Main Content Section -->
+    <main class="bg-white p-4 sm:p-6 md:p-8 rounded-lg shadow-2xl">
+      <div class="flex flex-col items-center mb-6 sm:mb-8">
+        <button id="generateButton" class="bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 text-base sm:py-3 sm:px-6 sm:text-lg md:text-xl rounded-lg disabled:opacity-60 disabled:cursor-not-allowed transition-colors duration-150 ease-in-out">
+          Generate Diary
+        </button>
+        <div id="loader" class="mt-4 sm:mt-6 border-4 border-slate-200 border-t-sky-600 rounded-full w-8 h-8 sm:w-10 sm:h-10 animate-spin" style="display:none;"></div>
+      </div>
+
+      <!-- Output Sections Wrapper -->
+      <div class="space-y-6 sm:space-y-8">
+        <div id="petDetails" class="p-4 sm:p-6 border border-slate-200 rounded-lg bg-slate-50/50 shadow-sm" style="display:none;">
+          <h2 class="text-xl sm:text-2xl font-semibold text-sky-700 mb-2 sm:mb-3">Pet Details</h2>
+          <pre id="petOutput" class="text-xs sm:text-sm whitespace-pre-wrap break-words bg-white p-3 sm:p-4 rounded-md shadow-inner border border-slate-200 min-h-[40px] sm:min-h-[50px]"></pre>
+        </div>
+        <div id="destinationDetails" class="p-4 sm:p-6 border border-slate-200 rounded-lg bg-slate-50/50 shadow-sm" style="display:none;">
+          <h2 class="text-xl sm:text-2xl font-semibold text-sky-700 mb-2 sm:mb-3">Destination</h2>
+          <pre id="destinationOutput" class="text-xs sm:text-sm whitespace-pre-wrap break-words bg-white p-3 sm:p-4 rounded-md shadow-inner border border-slate-200 min-h-[40px] sm:min-h-[50px]"></pre>
+        </div>
+        <div id="diaryDetails" class="p-4 sm:p-6 border border-slate-200 rounded-lg bg-slate-50/50 shadow-sm" style="display:none;">
+          <h2 class="text-xl sm:text-2xl font-semibold text-sky-700 mb-2 sm:mb-3">Diary Entry</h2>
+          <pre id="diaryOutput" class="text-xs sm:text-sm whitespace-pre-wrap break-words bg-white p-3 sm:p-4 rounded-md shadow-inner border border-slate-200 min-h-[40px] sm:min-h-[50px]"></pre>
+        </div>
+        <div id="imageDetails" class="p-4 sm:p-6 border border-slate-200 rounded-lg bg-slate-50/50 shadow-sm" style="display:none;">
+          <h2 class="text-xl sm:text-2xl font-semibold text-sky-700 mb-2 sm:mb-3">Diary Image</h2>
+          <img id="imageOutput" class="max-w-full h-auto rounded-md shadow" alt="Generated image" />
+        </div>
+        <div id="errorDetails" class="p-4 sm:p-6 border border-red-300 rounded-lg bg-red-100 text-red-700 shadow-sm" style="display:none;">
+          <h2 class="text-xl sm:text-2xl font-semibold mb-2 sm:mb-3 text-red-600">Error</h2>
+          <pre id="errorOutput" class="text-xs sm:text-sm whitespace-pre-wrap break-words bg-white p-3 sm:p-4 rounded-md shadow-inner border border-red-200 min-h-[40px] sm:min-h-[50px]"></pre>
+        </div>
+      </div>
+    </main>
   </div>
 
   <!-- 1) Compat SDKs for Hosting -->
