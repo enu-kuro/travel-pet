@@ -1,4 +1,4 @@
-import { onCallGenkit, onRequest } from "firebase-functions/v2/https";
+import { onCallGenkit, onRequest, onCall, HttpsError } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 
 import { checkNewEmailsAndCreatePet } from "./emailService";
@@ -12,6 +12,7 @@ import { createPetFlow } from "./flows/createPetFlow";
 import { generateDestinationFlow } from "./flows/generateDestinationFlow";
 import { generateDiaryFlow } from "./flows/generateDiaryFlow";
 import { generateDiaryImageFlow } from "./flows/generateDiaryImageFlow";
+import { saveImageToStorage } from "./diaryHelpers";
 
 export { db } from "./firebase";
 
@@ -136,3 +137,13 @@ export const createPet = onCallGenkit(createPetFlow);
 export const generateDestination = onCallGenkit(generateDestinationFlow);
 export const generateDiary = onCallGenkit(generateDiaryFlow);
 export const generateDiaryImage = onCallGenkit(generateDiaryImageFlow);
+
+export const saveDemoImage = onCall({ region: "us-central1" }, async (request) => {
+  const dataUrl = request.data?.dataUrl as string | undefined;
+  if (!dataUrl) {
+    throw new HttpsError("invalid-argument", "dataUrl is required");
+  }
+  const date = new Date().toISOString().split("T")[0];
+  const storedUrl = await saveImageToStorage(dataUrl, "demo", date);
+  return { url: storedUrl };
+});

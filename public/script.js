@@ -127,12 +127,15 @@ document.addEventListener('DOMContentLoaded', () => {
       imageDetailsDiv.classList.remove('hidden');
       imageDetailsDiv.scrollIntoView({ behavior: 'smooth' });
 
+      const saveImage = functions.httpsCallable('saveDemoImage');
+      const { data: saved } = await saveImage({ dataUrl: image.url });
+
       await db.collection('demoDiaries').add({
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         profile: petProfile,
         destination,
         diary: diary.diary,
-        imageUrl: image.url,
+        imageUrl: saved.url,
       });
       loadEntries();
     } catch (error) {
