@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const generateButton = document.getElementById('generateButton');
   const loader = document.getElementById('loader');
+  const buttonText = document.getElementById('buttonText');
 
   const petOutput = document.getElementById('petOutput');
   const destinationOutput = document.getElementById('destinationOutput');
@@ -16,17 +17,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const functions = firebase.app().functions('us-central1');
 
+  function renderObject(element, data) {
+    element.innerHTML = '';
+    Object.entries(data).forEach(([key, value]) => {
+      const div = document.createElement('div');
+      div.className = 'flex mb-1';
+      const label = document.createElement('span');
+      label.className = 'font-semibold mr-2';
+      label.textContent = key + ':';
+      const val = document.createElement('span');
+      val.textContent = typeof value === 'object' ? JSON.stringify(value) : value;
+      div.appendChild(label);
+      div.appendChild(val);
+      element.appendChild(div);
+    });
+  }
+
   generateButton.addEventListener('click', async () => {
     generateButton.disabled = true;
-    generateButton.textContent = 'Generating...';
+    buttonText.textContent = 'Generating...';
     loader.style.display = 'inline-block';
     petDetailsDiv.style.display = 'none';
     destinationDetailsDiv.style.display = 'none';
     diaryDetailsDiv.style.display = 'none';
     imageDetailsDiv.style.display = 'none';
     errorDetailsDiv.style.display = 'none';
-    petOutput.textContent = '';
-    destinationOutput.textContent = '';
+    petOutput.innerHTML = '';
+    destinationOutput.innerHTML = '';
     diaryOutput.textContent = '';
     imageOutput.src = '';
     errorOutput.textContent = '';
@@ -36,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const createPet = functions.httpsCallable('createPet');
       const { data: petWrapper } = await createPet({});
       const petProfile = petWrapper.profile;
-      petOutput.textContent = JSON.stringify(petProfile, null, 2);
+      renderObject(petOutput, petProfile);
       petDetailsDiv.style.display = 'block';
       petDetailsDiv.scrollIntoView({ behavior: 'smooth' });
 
@@ -48,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
         date,
         past_destinations: []
       });
-      destinationOutput.textContent = JSON.stringify(destination, null, 2);
+      renderObject(destinationOutput, destination);
       destinationDetailsDiv.style.display = 'block';
       destinationDetailsDiv.scrollIntoView({ behavior: 'smooth' });
 
@@ -75,10 +92,10 @@ document.addEventListener('DOMContentLoaded', () => {
       errorOutput.textContent = error.message;
       errorDetailsDiv.style.display = 'block';
       errorDetailsDiv.scrollIntoView({ behavior: 'smooth' });
-    } finally {
-      generateButton.disabled = false;
-      generateButton.textContent = 'Generate Diary';
-      loader.style.display = 'none';
-    }
+  } finally {
+    generateButton.disabled = false;
+    buttonText.textContent = 'Generate Diary';
+    loader.style.display = 'none';
+  }
   });
 });
