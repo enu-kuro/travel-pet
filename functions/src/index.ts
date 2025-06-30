@@ -133,17 +133,32 @@ export const helloWorld = onRequest(async (_req, res) => {
   res.status(200).send("✅ Hello from Gen 2 Cloud Functions!");
 });
 
-export const createPet = onCallGenkit(createPetFlow);
-export const generateDestination = onCallGenkit(generateDestinationFlow);
-export const generateDiary = onCallGenkit(generateDiaryFlow);
-export const generateDiaryImage = onCallGenkit(generateDiaryImageFlow);
+export const createPet = onCallGenkit(
+  { enforceAppCheck: true },
+  createPetFlow
+);
+export const generateDestination = onCallGenkit(
+  { enforceAppCheck: true },
+  generateDestinationFlow
+);
+export const generateDiary = onCallGenkit(
+  { enforceAppCheck: true },
+  generateDiaryFlow
+);
+export const generateDiaryImage = onCallGenkit(
+  { enforceAppCheck: true },
+  generateDiaryImageFlow
+);
 
-export const saveDemoImage = onCall({ region: "us-central1" }, async (request) => {
-  const dataUrl = request.data?.dataUrl as string | undefined;
-  if (!dataUrl) {
-    throw new HttpsError("invalid-argument", "dataUrl is required");
+export const saveDemoImage = onCall(
+  { region: "us-central1", enforceAppCheck: true },
+  async (request) => {
+    const dataUrl = request.data?.dataUrl as string | undefined;
+    if (!dataUrl) {
+      throw new HttpsError("invalid-argument", "dataUrl is required");
+    }
+    const date = new Date().toISOString().split("T")[0];
+    const storedUrl = await saveImageToStorage(dataUrl, "demo", date);
+    return { url: storedUrl };
   }
-  const date = new Date().toISOString().split("T")[0];
-  const storedUrl = await saveImageToStorage(dataUrl, "demo", date);
-  return { url: storedUrl };
-});
+);
