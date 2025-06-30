@@ -14,8 +14,8 @@
       <a href="index.html" class="text-sm text-blue-600 underline">戻る</a>
     </div>
     <div id="entriesList" class="space-y-6"></div>
-    <div class="flex justify-center mt-6">
-      <button id="loadMore" class="px-4 py-2 text-sm text-white rounded" style="background-color: #75b1ae">もっと読み込む</button>
+    <div id="loading" class="flex justify-center mt-6 hidden">
+      <div class="border-2 border-gray-300 border-t-transparent rounded-full w-6 h-6 animate-spin"></div>
     </div>
   </div>
 
@@ -23,6 +23,6 @@
   <script src="/__/firebase/9.0.0/firebase-app-compat.js"></script>
   <script src="/__/firebase/9.0.0/firebase-firestore-compat.js"></script>
   <script src="/__/firebase/init.js?useEmulator=true"></script>
-  <script src="entries.js?v=1"></script>
+  <script src="entries.js?v=2"></script>
 </body>
 </html>

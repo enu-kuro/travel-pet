@@ -1,20 +1,17 @@
 document.addEventListener('DOMContentLoaded', () => {
   const db = firebase.app().firestore();
   const entriesList = document.getElementById('entriesList');
-  const loadMoreBtn = document.getElementById('loadMore');
-  let lastDoc = null;
+  const loading = document.getElementById('loading');
 
   async function loadEntries() {
-    let query = db.collection('demoDiaries').orderBy('createdAt', 'desc').limit(10);
-    if (lastDoc) {
-      query = query.startAfter(lastDoc);
-    }
+    loading.classList.remove('hidden');
+    const query = db.collection('demoDiaries').orderBy('createdAt', 'desc').limit(100);
     const snap = await query.get();
+    loading.classList.add('hidden');
     if (snap.empty) {
-      loadMoreBtn.disabled = true;
+      entriesList.innerHTML = '<p class="text-center text-sm text-gray-600">データがありません</p>';
       return;
     }
-    lastDoc = snap.docs[snap.docs.length - 1];
 
     const html = snap.docs
       .map((doc) => {
@@ -24,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const diary = d.diary ?? '';
         const diaryHtml = diary.replace(/\n/g, '<br>');
         const image = d.imageUrl
-          ? `<img src="${d.imageUrl}" class="max-w-full h-auto mt-2" />`
+          ? `<img src="${d.imageUrl}" width="512" height="512" loading="lazy" class="max-w-full h-auto mt-2" />`
           : '';
         return `
           <div class="border rounded p-4">
@@ -40,6 +37,5 @@ document.addEventListener('DOMContentLoaded', () => {
     entriesList.insertAdjacentHTML('beforeend', html);
   }
 
-  loadMoreBtn.addEventListener('click', loadEntries);
   loadEntries();
 });
