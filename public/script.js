@@ -16,6 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const errorDetailsDiv = document.getElementById('errorDetails');
   const db = firebase.app().firestore();
 
+  firebase.appCheck().activate('6LdIZ3IrAAAAAO5jfpuH6WzpmdMvL7vCqUZ09s7P', true);
+
   const functions = firebase.app().functions('us-central1');
   const viewEntriesLink = document.getElementById('viewEntries');
 
