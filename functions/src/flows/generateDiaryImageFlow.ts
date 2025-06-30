@@ -26,7 +26,24 @@ export const generateDiaryImageFlow = ai.defineFlow(
       model: vertexAI.model("imagen-4.0-fast-generate-preview-06-06"),
       prompt: `${input.prompt}, ${STYLE_PROMPT}`,
       output: { format: "media" },
-      config: { aspectRatio: "1:1" },
+      config: {
+        aspectRatio: "1:1",
+        // 最も緩い安全フィルタリング
+        safetySettings: [
+          { category: "HARM_CATEGORY_SEXUAL", threshold: "BLOCK_LOW" },
+          { category: "HARM_CATEGORY_VIOLENCE", threshold: "BLOCK_LOW" },
+          { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_LOW" },
+          { category: "HARM_CATEGORY_DEROGATORY", threshold: "BLOCK_LOW" },
+          { category: "HARM_CATEGORY_MEDICAL", threshold: "BLOCK_LOW" },
+          { category: "HARM_CATEGORY_SELF_HARM", threshold: "BLOCK_LOW" },
+          {
+            category: "HARM_CATEGORY_ILLICIT_BEHAVIOR",
+            threshold: "BLOCK_LOW",
+          },
+          { category: "HARM_CATEGORY_UNKNOWN", threshold: "BLOCK_LOW" },
+        ],
+        personGeneration: "allow_all",
+      },
     });
 
     const url = result.media?.url;
